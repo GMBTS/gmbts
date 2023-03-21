@@ -34,3 +34,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+credentials.json
+
+.env
+
+.idea
+
+app.yaml
+
+.gcloudignore

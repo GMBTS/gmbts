@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  profileId     String   @id @default(uuid()) @db.Uuid
+  bio           String?
+  ProfileUserId String   @unique @db.Uuid
+  User          User     @relation(fields: [ProfileUserId], references: [userId])
+  createdAt     DateTime @default(now())
+}
+
+model User {
+  userId    String   @id @default(uuid()) @db.Uuid
+  name      String?  @db.VarChar(255)
+  email     String   @unique @db.VarChar(255)
+  Profile   Profile?
+  createdAt DateTime @default(now())
+
+  UserComplainets    Complaint[] @relation("UserComplainets")
+  ApproverComplaints Complaint[] @relation("ApproverComplaints")
+}
+
+model Complaint {
+  complaintId String   @id @default(uuid()) @db.Uuid
+  title       String   @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  content     String?
+  isApproved  Boolean  @default(false)
+  location    String?
+  images      String[]
+
+  authorId    String    @db.Uuid
+  isAnonymous Boolean   @default(true)
+  approvedAt  DateTime?
+  approverId  String?   @db.Uuid
+  User        User      @relation("UserComplainets", fields: [authorId], references: [userId])
+  Approver    User?     @relation("ApproverComplaints", fields: [approverId], references: [userId])
+}
