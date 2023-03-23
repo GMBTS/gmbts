@@ -1,22 +1,31 @@
-import { Storage } from '@google-cloud/storage';
 import { PrismaClient } from '@prisma/client';
+import fs from 'fs';
 import multer from 'multer';
 import { NextApiRequest, NextApiResponse } from 'next';
 import nextConnect from 'next-connect';
 import path from 'path';
-import { format } from 'util';
+import * as uuid from 'uuid';
 
 const multerHandler = multer({
-  storage: multer.memoryStorage(),
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      debugger;
+      const user = req.context.user;
+      const complaintId = req.context.complaintId;
+
+      const balayAudPath = path.join(__dirname, `../../../../../uploads/${user.userId}/${complaintId}`);
+
+      fs.mkdirSync(balayAudPath, { recursive: true });
+      cb(null, balayAudPath);
+    },
+    filename: (req, file, cb) => {
+      cb(null, file.originalname);
+    },
+  }),
   limits: {
     fileSize: 10 * 1024 * 1024,
     files: 5,
   },
-});
-
-const storage = new Storage({
-  keyFilename: path.join(__dirname, '../../../../../credentials.json'),
-  projectId: 'gmtbs-jlm',
 });
 
 function createUploadMiddleware() {
@@ -39,16 +48,9 @@ export default async function handler(req: NextApiRequest & { files: Express.Mul
     res.status(405).send('Method not allowed');
     return;
   }
+
   const prisma = new PrismaClient();
-  await storage.getBuckets();
-  const bucket = storage.bucket('gmbts');
-
-  await createUploadMiddleware().run(req, res);
-
-  if (!req.files) {
-    res.status(400).send('No files were uploaded.');
-    return;
-  }
+  const complaintId = uuid.v4();
 
   let user = await prisma.user.findFirst({});
 
@@ -66,50 +68,42 @@ export default async function handler(req: NextApiRequest & { files: Express.Mul
     return;
   }
 
+  const mwreq = req as NextApiRequest & { context?: unknown };
+  mwreq.context = { user, complaintId };
+
+  await createUploadMiddleware().run(mwreq, res);
+
+  if (!req.files) {
+    res.status(400).send('No files were uploaded.');
+    return;
+  }
+
+  for (const file of req.files) {
+    console.log('File path: ', file.path);
+    console.log('File name: ', file.originalname);
+  }
+
   const formData = JSON.parse(req.body.formData) as { title: string; content: string };
 
   const complaint = await prisma.complaint.create({
     data: {
+      complaintId,
       title: formData.title,
       content: formData.content,
       authorId: user.userId,
     },
   });
 
-  const promisees = req.files.map(async (file) => {
-    const fileName = `accounts/${user?.userId}${bucket.name}/${complaint.complaintId}/${file.originalname}`;
-    const blob = bucket.file(fileName);
-    const blobStream = blob.createWriteStream();
-
-    const path = await new Promise<string>((resolve, reject) => {
-      let publicUrl = '';
-      blobStream.on('error', (err) => {
-        reject('error');
-      });
-
-      blobStream.on('finish', () => {
-        publicUrl = format(fileName);
-        return resolve(publicUrl);
-      });
-
-      blobStream.end(file.buffer);
-    });
-
-    return path;
-  });
-
-  const results = await Promise.all(promisees);
-
   await prisma.complaint.update({
     where: {
       complaintId: complaint.complaintId,
     },
     data: {
-      images: results,
+      // images: results,
     },
   });
 
-  res.status(200).send({ results });
+  res.status(200).send({ results: null });
 }
 
 export const config = { api: { bodyParser: false } };
