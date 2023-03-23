@@ -9,7 +9,6 @@ import * as uuid from 'uuid';
 const multerHandler = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      debugger;
       const user = req.context.user;
       const complaintId = req.context.complaintId;
 
@@ -83,6 +82,8 @@ export default async function handler(req: NextApiRequest & { files: Express.Mul
     console.log('File name: ', file.originalname);
   }
 
+  const paths = req.files.map((file) => file.path.split('uploads')[1]);
+  debugger;
   const formData = JSON.parse(req.body.formData) as { title: string; content: string };
 
   const complaint = await prisma.complaint.create({
@@ -99,11 +100,11 @@ export default async function handler(req: NextApiRequest & { files: Express.Mul
       complaintId: complaint.complaintId,
     },
     data: {
-      // images: results,
+      images: paths,
     },
   });
 
-  res.status(200).send({ results: null });
+  res.status(200).send({ results: true });
 }
 
 export const config = { api: { bodyParser: false } };
