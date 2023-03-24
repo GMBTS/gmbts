@@ -6,13 +6,22 @@ import nextConnect from 'next-connect';
 import path from 'path';
 import * as uuid from 'uuid';
 
+type ExtendedNextApiRequest = NextApiRequest & {
+  context: {
+    userId: string;
+    complaintId: string;
+  };
+};
+
 const multerHandler = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      const user = req.context.user;
-      const complaintId = req.context.complaintId;
+      const realReq = req as unknown as ExtendedNextApiRequest;
 
-      const balayAudPath = path.join(__dirname, `../../../../../uploads/${user.userId}/${complaintId}`);
+      const userId = realReq.context.userId;
+      const complaintId = realReq.context.complaintId;
+
+      const balayAudPath = path.join(__dirname, `../../../../../uploads/${userId}/${complaintId}`);
 
       fs.mkdirSync(balayAudPath, { recursive: true });
       cb(null, balayAudPath);
