@@ -74,7 +74,7 @@ const NewPost = () => {
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     setSuccess(false);
-    const x = await createComplaint(data);
+    await createComplaint(data);
     reset();
     setSuccess(true);
   };
@@ -113,7 +113,6 @@ const NewPost = () => {
       navigator?.geolocation.getCurrentPosition(onSuccessLocation, error, options);
     }
   }, [onSuccessLocation]);
-  console.log({ errors });
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>

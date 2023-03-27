@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import amqp from 'amqplib';
 import fs from 'fs';
 import multer from 'multer';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -6,7 +7,27 @@ import nextConnect from 'next-connect';
 import path from 'path';
 import * as uuid from 'uuid';
 
+var channel: amqp.Channel, connection: amqp.Connection; //global variables
+async function connectQueue() {
+  if (channel && connection) return;
+  try {
+    connection = await amqp.connect('amqp://localhost:5672');
+    channel = await connection.createChannel();
+
+    await channel.assertQueue('test-queue-1');
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+connectQueue();
+
+async function sendData(paths: string[]) {
+  return channel.sendToQueue('test-queue-1', Buffer.from(JSON.stringify(paths)));
+}
+
 type ExtendedNextApiRequest = NextApiRequest & {
+  files: Express.Multer.File[];
   context: {
     userId: string;
     complaintId: string;
@@ -51,7 +72,7 @@ function createUploadMiddleware() {
   return apiRoute;
 }
 
-export default async function handler(req: NextApiRequest & { files: Express.Multer.File[] }, res: NextApiResponse) {
+export default async function handler(req: ExtendedNextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     res.status(405).send('Method not allowed');
     return;
@@ -76,8 +97,8 @@ export default async function handler(req: NextApiRequest & { files: Express.Mul
     return;
   }
 
-  const mwreq = req as NextApiRequest & { context?: unknown };
-  mwreq.context = { user, complaintId };
+  const mwreq = req as ExtendedNextApiRequest;
+  mwreq.context = { userId: user.userId, complaintId };
 
   await createUploadMiddleware().run(mwreq, res);
 
@@ -92,7 +113,7 @@ export default async function handler(req: NextApiRequest & { files: Express.Mul
   }
 
   const paths = req.files.map((file) => file.path.split('uploads')[1]);
-  debugger;
+
   const formData = JSON.parse(req.body.formData) as { title: string; content: string };
 
   const complaint = await prisma.complaint.create({
@@ -112,6 +133,7 @@ export default async function handler(req: NextApiRequest & { files: Express.Mul
       images: paths,
     },
   });
+  await sendData(paths);
 
   res.status(200).send({ results: true });
 }
