@@ -30,13 +30,14 @@ model User {
 }
 
 model Complaint {
-  complaintId String   @id @default(uuid()) @db.Uuid
-  title       String   @db.VarChar(255)
-  createdAt   DateTime @default(now())
-  content     String?
-  isApproved  Boolean  @default(false)
-  location    String?
-  images      String[]
+  complaintId  String   @id @default(uuid()) @db.Uuid
+  title        String   @db.VarChar(255)
+  createdAt    DateTime @default(now())
+  content      String?
+  isApproved   Boolean  @default(false)
+  location     String?
+  images       String[]
+  licensePlate String?
 
   authorId    String    @db.Uuid
   isAnonymous Boolean   @default(true)

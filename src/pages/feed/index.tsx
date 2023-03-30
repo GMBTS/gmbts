@@ -1,14 +1,16 @@
 import { Complaint, PrismaClient } from '@prisma/client';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
-const FeedImage: React.FC<{ url: string }> = ({ url }) => {
+const FeedImage: React.FC<{ url: string; id: string }> = ({ url, id }) => {
   return (
     <div>
-      <img
-        style={{ height: 400, objectFit: 'cover', textAlign: 'center' }}
-        src={`/api/complaint/images/download?url=${url}`}
-      />
+      <Link href={`/complaint/${id}`}>
+        <img
+          style={{ height: 400, objectFit: 'cover', textAlign: 'center', borderRadius: '4%' }}
+          src={`/api/complaint/images/download?url=${url}`}
+          loading="lazy"
+        />
+      </Link>
     </div>
   );
 };
@@ -29,7 +31,7 @@ const Feed: React.FC<{ complaints: Complaint[] }> = ({ complaints }) => {
           }}
         >
           <div>
-            {complaint.images.length > 0 && <FeedImage url={complaint.images[0]} />}
+            {complaint.images.length > 0 && <FeedImage url={complaint.images[0]} id={complaint.complaintId} />}
             <div style={{ display: 'flex', gap: 20, justifyContent: 'center' }}>
               <span>{complaint.title}</span>
               <span>{complaint.content}</span>

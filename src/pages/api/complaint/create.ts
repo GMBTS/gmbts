@@ -114,13 +114,14 @@ export default async function handler(req: ExtendedNextApiRequest, res: NextApiR
 
   const paths = req.files.map((file) => file.path.split('uploads')[1]);
 
-  const formData = JSON.parse(req.body.formData) as { title: string; content: string };
+  const formData = JSON.parse(req.body.formData) as { title: string; content: string; licensePlate: string }; // todo share the type wit the form
 
   const complaint = await prisma.complaint.create({
     data: {
       complaintId,
       title: formData.title,
       content: formData.content,
+      licensePlate: formData.licensePlate,
       authorId: user.userId,
     },
   });

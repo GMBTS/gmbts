@@ -1,8 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { useMutation } from 'react-query';
-import { json } from 'stream/consumers';
 
-import { IFormInput } from '@/pages/complaint/create';
+import { IFormInput } from '@/pages/complaint/Create';
 
 const useCreateComplaint = () => {
   return useMutation(async (complaint: IFormInput) => {
@@ -23,9 +22,7 @@ const useCreateComplaint = () => {
       },
     };
 
-    const x = await axios.post('/api/complaint/create', formData, config);
-
-    return x;
+    return axios.post('/api/complaint/create', formData, config);
   });
 };
 export { useCreateComplaint };
