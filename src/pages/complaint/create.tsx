@@ -8,16 +8,10 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
 import { useCreateComplaint } from '@/client/components/file-upload/hooks/useCreateComplaint';
+import { IFormInput } from '@/types/complaints/create';
 export const MAX_UPLOAD_FILE_SIZE = 10 * 1024 * 1024;
 
 const queryClient = new QueryClient();
-export interface IFormInput {
-  title: string;
-  content: string;
-  images: File[];
-  location?: string;
-  licensePlate?: string;
-}
 
 const X = () => {
   return (
