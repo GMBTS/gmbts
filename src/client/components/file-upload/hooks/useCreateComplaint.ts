@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { useMutation } from 'react-query';
 
-import { IFormInput } from '@/pages/complaint/Create';
+import { IFormInput } from '@/types/complaints/create';
 
 const useCreateComplaint = () => {
   return useMutation(async (complaint: IFormInput) => {
