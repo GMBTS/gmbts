@@ -39,7 +39,7 @@ const NewPost = () => {
 
   const onDrop = useCallback(
     (droppedFiles: File[]) => {
-      if (images.length + droppedFiles.length > 5) return;
+      if (images.length + droppedFiles.length > MAX_FILE_UPLOAD_COUNT) return;
 
       setValue('images', [...images, ...droppedFiles]);
     },
