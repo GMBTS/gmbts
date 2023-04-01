@@ -3,9 +3,12 @@ import amqp from 'amqplib';
 import fs from 'fs';
 import multer from 'multer';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { getServerSession } from 'next-auth/next';
 import nextConnect from 'next-connect';
 import path from 'path';
 import * as uuid from 'uuid';
+
+import { authOptions } from '../auth/[...nextauth]';
 
 var channel: amqp.Channel, connection: amqp.Connection; //global variables
 async function connectQueue() {
@@ -73,6 +76,13 @@ function createUploadMiddleware() {
 }
 
 export default async function handler(req: ExtendedNextApiRequest, res: NextApiResponse) {
+  const session = await getServerSession(req, res, authOptions);
+
+  if (!session?.user?.id) {
+    res.status(401).send('Unauthorized');
+    return;
+  }
+
   if (req.method !== 'POST') {
     res.status(405).send('Method not allowed');
     return;
@@ -81,35 +91,14 @@ export default async function handler(req: ExtendedNextApiRequest, res: NextApiR
   const prisma = new PrismaClient();
   const complaintId = uuid.v4();
 
-  let user = await prisma.user.findFirst({});
-
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        email: 'test@gmail.com',
-        name: 'test',
-      },
-    });
-  }
-
-  if (!user) {
-    res.status(500).send('No user found');
-    return;
-  }
-
   const mwreq = req as ExtendedNextApiRequest;
-  mwreq.context = { userId: user.userId, complaintId };
+  mwreq.context = { userId: session.user.id, complaintId };
 
   await createUploadMiddleware().run(mwreq, res);
 
   if (!req.files) {
     res.status(400).send('No files were uploaded.');
     return;
-  }
-
-  for (const file of req.files) {
-    console.log('File path: ', file.path);
-    console.log('File name: ', file.originalname);
   }
 
   const paths = req.files.map((file) => file.path.split('uploads')[1]);
@@ -122,7 +111,7 @@ export default async function handler(req: ExtendedNextApiRequest, res: NextApiR
       title: formData.title,
       content: formData.content,
       licensePlate: formData.licensePlate,
-      authorId: user.userId,
+      authorId: session.user.id,
     },
   });
 

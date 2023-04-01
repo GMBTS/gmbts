@@ -6,13 +6,12 @@ import Carousel from 'better-react-carousel';
 import Link from 'next/link';
 
 const ViewComplaint: React.FC<{ complaint: Complaint }> = ({ complaint }) => {
-  console.log(complaint);
   return (
     <div style={{ height: '100vh', padding: 16 }}>
       <div style={{ display: 'flex', flexDirection: 'column' }} />
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <div>
-          <IconButton size="large" color="inherit" component={Link} href="/">
+          <IconButton size="large" color="inherit" component={Link} href="/feed">
             <ArrowBackIcon />
           </IconButton>
         </div>
