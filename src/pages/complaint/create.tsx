@@ -5,22 +5,10 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { QueryClient, QueryClientProvider } from 'react-query';
 
 import { useCreateComplaint } from '@/client/components/file-upload/hooks/useCreateComplaint';
 import { IFormInput } from '@/types/complaints/create';
-export const MAX_UPLOAD_FILE_SIZE = 10 * 1024 * 1024;
-
-const queryClient = new QueryClient();
-
-const X = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      {/* // move this to _app */}
-      <NewPost />
-    </QueryClientProvider>
-  );
-};
+import { IMAGES_MIME_TYPE, MAX_FILE_UPLOAD_COUNT, MAX_UPLOAD_FILE_SIZE } from '@/utils/constants';
 
 const options = {
   enableHighAccuracy: true,
@@ -60,10 +48,10 @@ const NewPost = () => {
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     multiple: true,
-    accept: { 'image/*': [] },
+    accept: { [IMAGES_MIME_TYPE]: [] },
     maxSize: MAX_UPLOAD_FILE_SIZE,
     useFsAccessApi: false,
-    maxFiles: 5,
+    maxFiles: MAX_FILE_UPLOAD_COUNT,
   });
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
@@ -94,7 +82,6 @@ const NewPost = () => {
   }
 
   function removeImage(index: number): void {
-    debugger;
     if (images[index] === undefined) return;
 
     const newImages = [...images];
@@ -157,6 +144,7 @@ const NewPost = () => {
             <input {...getInputProps({ id: 'images' })} />
             Drag n drop here
           </div>
+
           {images &&
             images.length > 0 &&
             images.map((image, index) => (
@@ -190,4 +178,4 @@ const NewPost = () => {
   );
 };
 
-export default X;
+export default NewPost;

@@ -1,15 +1,24 @@
+import { Button, Typography } from '@mui/material';
 import { Inter } from 'next/font/google';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
+import { signIn, signOut, useSession } from 'next-auth/react';
 
 import styles from '@/styles/Home.module.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export default function Home() {
+  const { data: session } = useSession();
+
   return (
     <>
+      {session?.user?.email ? (
+        <Button onClick={() => signOut()}>singe out</Button>
+      ) : (
+        <Button onClick={() => signIn()}>singe In</Button>
+      )}
       <Head>
         <title>Give me back the sidewalk</title>
         <meta name="description" content="Give me back the sidewalk" />
@@ -27,9 +36,15 @@ export default function Home() {
               gap: 20,
             }}
           >
-            main page we need to get our sidewalk back!
-            <Link href="/feed">go to feed</Link>
-            <Link href="/complaint/create">Create a new complaint</Link>
+            <Typography style={{ textAlign: 'center', fontWeight: 600 }} variant="h3">
+              Give me back the sidewalk!
+            </Typography>
+            <Button component={Link} href="/feed" variant="outlined">
+              go to feed
+            </Button>
+            <Button component={Link} href="/complaint/create" variant="outlined">
+              Create a new complaint
+            </Button>
           </div>
         </main>
         asd asd
