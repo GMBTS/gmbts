@@ -48,8 +48,9 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  AutherComplainets  Complaint[] @relation("AutherComplainets")
-  ApproverComplaints Complaint[] @relation("ApproverComplaints")
+  AutherComplainets  Complaint[]        @relation("AutherComplainets")
+  ApproverComplaints Complaint[]        @relation("ApproverComplaints")
+  WhiteListAccounts  WhiteListAccounts?
 }
 
 model VerificationToken {
@@ -76,4 +77,13 @@ model Complaint {
   approverId  String?
   Auther      User      @relation("AutherComplainets", fields: [authorId], references: [id])
   Approver    User?     @relation("ApproverComplaints", fields: [approverId], references: [id])
+}
+
+model WhiteListAccounts {
+  id        String @id @default(cuid())
+  accountId String
+
+  AllowedAccount User @relation(fields: [accountId], references: [id])
+
+  @@unique(accountId)
 }

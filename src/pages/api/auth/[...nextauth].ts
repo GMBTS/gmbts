@@ -32,7 +32,16 @@ export const authOptions: NextAuthOptions = {
     },
     jwt: async ({ user, token }) => {
       if (user) {
+        const isUserThere = await prisma.whiteListAccounts.count({
+          where: {
+            accountId: user.id,
+          },
+        });
+
+        debugger;
+
         token.uid = user.id;
+        token.isAllowed = !!isUserThere;
       }
       return token;
     },
