@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   const session = await getServerSession(req, res, authOptions);
 
-  if (!session?.user?.id || session?.user?.email !== 'avner.israel@gmail.com') {
+  if (!session?.user?.id || session?.user?.email !== process.env.SUPPER_DUPER_ADMIN_EMAIL) {
     res.status(401).send('Unauthorized');
     return;
   }
