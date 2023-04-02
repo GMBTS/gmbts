@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const originalName = splittedPath[splittedPath.length - 1];
   const strippedDownPath = splittedPath.slice(0, splittedPath.length - 1).join('/');
 
-  const filePath = path.resolve(__dirname, `../../../../../../uploads/${strippedDownPath}/200-${originalName}`);
+  const filePath = path.resolve(__dirname, `../../../../../../uploads/${strippedDownPath}/400-${originalName}`);
   let imageBuffer;
   if (fs.existsSync(filePath)) {
     imageBuffer = fs.readFileSync(filePath);
