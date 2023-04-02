@@ -6,5 +6,6 @@ declare namespace NodeJS {
     GITHUB_SECRET: string;
     GOOGLE_CLIENT_ID: string;
     GOOGLE_CLIENT_SECRET: string;
+    SUPPER_DUPER_ADMIN_EMAIL: string;
   }
 }

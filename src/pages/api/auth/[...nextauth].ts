@@ -38,8 +38,6 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        debugger;
-
         token.uid = user.id;
         token.isAllowed = !!isUserThere;
       }
