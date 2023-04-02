@@ -29,6 +29,7 @@ const NewPost = () => {
   const { mutateAsync: createComplaint, isError, isLoading, data } = useCreateComplaint();
   const [success, setSuccess] = useState(false);
   const [location, setLocation] = useState<GeolocationCoordinates>();
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
   register('images', { required: true, value: [] });
   register('location');
@@ -42,8 +43,9 @@ const NewPost = () => {
       if (images.length + droppedFiles.length > MAX_FILE_UPLOAD_COUNT) return;
 
       setValue('images', [...images, ...droppedFiles]);
+      setPreviewUrls([...previewUrls, ...droppedFiles.map((file) => URL.createObjectURL(file))]);
     },
-    [images, setValue],
+    [images, setValue, previewUrls],
   );
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
@@ -87,6 +89,11 @@ const NewPost = () => {
     const newImages = [...images];
     newImages.splice(index, 1);
     setValue('images', newImages);
+
+    const newPreviewUrls = [...previewUrls];
+    newPreviewUrls.splice(index, 1);
+
+    setPreviewUrls(newPreviewUrls);
   }
 
   useEffect(() => {
@@ -95,85 +102,137 @@ const NewPost = () => {
     }
   }, [onSuccessLocation]);
 
+  useEffect(() => {
+    return () => previewUrls.forEach((previewUrl) => URL.revokeObjectURL(previewUrl));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ textAlign: 'center', marginTop: 36 }}>
         <Typography variant="h4">Create a complaint</Typography>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          width: '75%',
-          maxWidth: '600px',
-          justifyContent: 'center',
-          margin: 'auto',
-          marginTop: '10%',
-          paddingBottom: '10%',
-        }}
-      >
-        <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column' }}>
-          <TextField
-            {...register('title', { required: true, maxLength: 20 })}
-            label="Title"
-            variant="standard"
-            error={!!errors.title}
-            helperText={errors?.title?.message}
-          />
-          <TextField
-            {...register('licensePlate')}
-            type="text"
-            variant="standard"
-            label="License Plate"
-            error={!!errors.licensePlate}
-            helperText={errors?.licensePlate?.message}
-          />
-          <TextField
-            {...register('content')}
-            type="text"
-            variant="standard"
-            label="Description"
-            multiline
-            rows={2}
-            error={!!errors.content}
-            helperText={errors?.content?.message}
-          />
+      <form onSubmit={handleSubmit(onSubmit)} style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: '75%',
+            maxWidth: '600px',
+            justifyContent: 'center',
+            margin: 'auto',
+            marginTop: '10%',
+            paddingBottom: '10%',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <TextField
+              {...register('title', { required: true, maxLength: 20 })}
+              label="Title"
+              variant="standard"
+              error={!!errors.title}
+              helperText={errors?.title?.message}
+              style={{ marginBottom: 24 }}
+            />
+            <TextField
+              {...register('licensePlate')}
+              type="number"
+              variant="standard"
+              label="License Plate"
+              error={!!errors.licensePlate}
+              helperText={errors?.licensePlate?.message}
+              style={{ marginBottom: 24 }}
+            />
+            <TextField
+              {...register('content')}
+              type="text"
+              variant="standard"
+              label="Description"
+              multiline
+              rows={2}
+              error={!!errors.content}
+              helperText={errors?.content?.message}
+              style={{ marginBottom: 24 }}
+            />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              {images &&
+                images.length > 0 &&
+                images.map((image, index) => (
+                  <div key={`${image.name}`} style={{ display: 'flex', alignItems: 'center', margin: '16px 0' }}>
+                    <div style={{ position: 'relative' }}>
+                      <img
+                        src={previewUrls[index]}
+                        style={{
+                          maxWidth: '100%',
+                          maxHeight: 450,
+                          objectFit: 'contain',
+                          borderRadius: '5%',
+                        }}
+                      />
 
-          <div {...getRootProps({ className: 'my-dropzone', style: { cursor: 'pointer', margin: '10px 0' } })}>
-            <input {...getInputProps({ id: 'images' })} />
-            Drag n drop here
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          right: 0,
+                          marginRight: -20,
+                          marginTop: -20,
+                          backgroundColor: 'coral',
+                          borderRadius: '50%',
+                          opacity: 0.9,
+                        }}
+                      >
+                        <IconButton onClick={() => removeImage(index)} aria-label="delete" style={{ opacity: 1 }}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            <div {...getRootProps({ className: 'my-dropzone', style: { cursor: 'pointer', margin: '24px 0' } })}>
+              <input {...getInputProps({ id: 'images' })} />
+              Drag n drop here
+            </div>
+          </div>
+        </div>
+        <div
+          id="footer"
+          style={{
+            width: '100%',
+            backgroundColor: 'gray',
+            position: 'sticky',
+            bottom: 0,
+            display: 'flex',
+            justifyContent: 'space-between',
+            flexDirection: 'row-reverse',
+            alignItems: 'center',
+            height: 56,
+            borderRadius: 4,
+            padding: '8px 16px',
+          }}
+        >
+          <div>
+            <Button disabled={isLoading} variant="contained" type="submit">
+              Submit
+            </Button>
           </div>
 
-          {images &&
-            images.length > 0 &&
-            images.map((image, index) => (
-              <div key={`${image.name}`} style={{ display: 'flex', alignItems: 'center' }}>
-                <IconButton onClick={() => removeImage(index)} aria-label="delete">
-                  <DeleteIcon />
-                </IconButton>
-                <Typography noWrap variant="caption">
-                  {image.name}
-                </Typography>
-              </div>
-            ))}
-
-          <Button disabled={isLoading} variant="contained" type="submit" style={{ marginTop: 16 }}>
-            Submit
-          </Button>
-
           {isLoading && <div>Uploading</div>}
-        </form>
 
-        <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', gap: '20px' }}>
-          {success && <div>Success</div>}
-          {isError && <div>Error</div>}
+          <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', gap: '20px' }}>
+            {success && <Typography color="success">Success!</Typography>}
+            {isError && <div>Error</div>}
+          </div>
+
+          <Button component={Link} variant="text" href="/feed">
+            {`< Back to feed`}
+          </Button>
         </div>
-
-        <Button component={Link} variant="text" href="/feed" style={{ marginTop: 36 }}>
-          {`< Back to feed`}
-        </Button>
-      </div>
+      </form>
+      <div />
     </div>
   );
 };
