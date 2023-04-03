@@ -1,6 +1,6 @@
 {
-    "name": "Next.JS Progressive Web App",
-    "short_name": "Next PWA",
+    "name": "Give me back the sidewalk!",
+    "short_name": "GMBTS",
     "theme_color": "#ffffff",
     "background_color": "#004740",
     "display": "fullscreen",
@@ -8,8 +8,6 @@
     "scope": "/",
     "start_url": "/",
     "icons": [
-
-
       {
         "src": "icons/icon-192x192.png",
         "sizes": "192x192",
