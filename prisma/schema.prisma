@@ -62,14 +62,15 @@ model VerificationToken {
 }
 
 model Complaint {
-  complaintId  String   @id @default(uuid()) @db.Uuid
-  title        String   @db.VarChar(255)
-  createdAt    DateTime @default(now())
-  content      String?
-  isApproved   Boolean  @default(false)
-  location     String?
-  images       String[]
-  licensePlate String?
+  complaintId   String   @id @default(uuid()) @db.Uuid
+  title         String   @db.VarChar(255)
+  createdAt     DateTime @default(now())
+  content       String?
+  isApproved    Boolean  @default(false)
+  location      String?
+  images        String[]
+  licensePlate  String?
+  featuredImage String?
 
   authorId    String
   isAnonymous Boolean   @default(true)
