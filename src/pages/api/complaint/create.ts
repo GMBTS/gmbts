@@ -100,7 +100,7 @@ export default async function handler(req: ExtendedNextApiRequest, res: NextApiR
     res.status(400).send('No files were uploaded.');
     return;
   }
-  debugger;
+
   const paths = req.files.map((file) => file.path.split('uploads')[1]);
 
   const formData = JSON.parse(req.body.formData) as {
