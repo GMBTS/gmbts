@@ -1,14 +1,20 @@
+import { Button, Typography } from '@mui/material';
 import { Complaint, PrismaClient } from '@prisma/client';
+import dayjs from 'dayjs';
+import Image from 'next/image';
 import Link from 'next/link';
 
 const FeedImage: React.FC<{ url: string; id: string }> = ({ url, id }) => {
   return (
     <div>
       <Link href={`/complaint/${id}`}>
-        <img
+        <Image
           style={{ height: 400, objectFit: 'cover', textAlign: 'center', borderRadius: '4%' }}
           src={`/api/complaint/images/download?url=${url}`}
           loading="lazy"
+          alt={`feed image ${id}`}
+          width={400}
+          height={400}
         />
       </Link>
     </div>
@@ -30,19 +36,20 @@ const Feed: React.FC<{ complaints: Complaint[] }> = ({ complaints }) => {
             display: 'flex',
           }}
         >
-          <div>
+          <div style={{ padding: '24px 36px', border: 'solid', borderRadius: '4px', alignItems: 'flex-end' }}>
             {complaint.images.length > 0 && <FeedImage url={complaint.images[0]} id={complaint.complaintId} />}
-            <div style={{ display: 'flex', gap: 20, justifyContent: 'center' }}>
-              <span>{complaint.title}</span>
-              <span>{complaint.content}</span>
+            <div style={{ display: 'flex', gap: 20, justifyContent: 'space-between', marginTop: 8 }}>
+              <Typography variant="caption">{complaint.title}</Typography>
+              <Typography variant="caption">{complaint.content}</Typography>
+              <Typography variant="caption">{dayjs(complaint.createdAt).format('DD/MM/YYYY HH:mm')}</Typography>
             </div>
           </div>
         </div>
       ))}
 
-      <Link style={{ marginTop: 50 }} href="/complaint/create">
+      <Button component={Link} href="/complaint/create" variant="outlined">
         Create a new complaint
-      </Link>
+      </Button>
     </div>
   );
 };
@@ -51,7 +58,7 @@ export default Feed;
 
 export async function getServerSideProps() {
   const prisma = new PrismaClient();
-  const complaints = await prisma.complaint.findMany();
+  const complaints = await prisma.complaint.findMany({ orderBy: { createdAt: 'desc' } });
 
   const postsToReturn = complaints.map((complaint) => ({
     ...complaint,

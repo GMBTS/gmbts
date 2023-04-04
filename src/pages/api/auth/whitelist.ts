@@ -7,7 +7,6 @@ import { authOptions } from './[...nextauth]';
 const prisma = new PrismaClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  debugger;
   if (req.method !== 'POST') {
     res.status(405).send('Method not allowed');
     return;

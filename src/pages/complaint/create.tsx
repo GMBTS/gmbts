@@ -1,10 +1,12 @@
 import DeleteIcon from '@mui/icons-material/Delete';
+import StarIcon from '@mui/icons-material/Star';
 import { IconButton, TextField, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import * as uuid from 'uuid';
 
 import { useCreateComplaint } from '@/client/components/file-upload/hooks/useCreateComplaint';
 import { IFormInput } from '@/types/complaints/create';
@@ -33,16 +35,18 @@ const NewPost = () => {
 
   register('images', { required: true, value: [] });
   register('location');
+  register('featuredImage');
 
   useEffect(() => () => unregister('images'), [unregister]);
 
   const images = watch('images');
+  const featuredImage = watch('featuredImage');
 
   const onDrop = useCallback(
     (droppedFiles: File[]) => {
       if (images.length + droppedFiles.length > MAX_FILE_UPLOAD_COUNT) return;
 
-      setValue('images', [...images, ...droppedFiles]);
+      setValue('images', [...images, ...droppedFiles.map((file) => ({ file, id: uuid.v4() }))]);
       setPreviewUrls([...previewUrls, ...droppedFiles.map((file) => URL.createObjectURL(file))]);
     },
     [images, setValue, previewUrls],
@@ -94,6 +98,12 @@ const NewPost = () => {
     newPreviewUrls.splice(index, 1);
 
     setPreviewUrls(newPreviewUrls);
+  }
+
+  function updateFeaturedImage(index: number): void {
+    if (images[index] === undefined) return;
+
+    setValue('featuredImage', images[index].id);
   }
 
   useEffect(() => {
@@ -159,7 +169,7 @@ const NewPost = () => {
               {images &&
                 images.length > 0 &&
                 images.map((image, index) => (
-                  <div key={`${image.name}`} style={{ display: 'flex', alignItems: 'center', margin: '16px 0' }}>
+                  <div key={`${image.id}`} style={{ display: 'flex', alignItems: 'center', margin: '16px 0' }}>
                     <div style={{ position: 'relative' }}>
                       <img
                         src={previewUrls[index]}
@@ -185,6 +195,30 @@ const NewPost = () => {
                       >
                         <IconButton onClick={() => removeImage(index)} aria-label="delete" style={{ opacity: 1 }}>
                           <DeleteIcon />
+                        </IconButton>
+                      </div>
+
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: 0,
+                          right: 0,
+                          backgroundColor: '#cdc0c0',
+                          borderRadius: '50%',
+                          marginBottom: -20,
+                          marginRight: -20,
+                        }}
+                      >
+                        <IconButton
+                          onClick={() => updateFeaturedImage(index)}
+                          aria-label="delete"
+                          style={{ opacity: 1 }}
+                        >
+                          <StarIcon
+                            style={{
+                              color: featuredImage === image.id || (!featuredImage && index === 0) ? 'yellow' : 'gray',
+                            }}
+                          />
                         </IconButton>
                       </div>
                     </div>

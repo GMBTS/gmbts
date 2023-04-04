@@ -7,8 +7,8 @@ const useCreateComplaint = () => {
   return useMutation(async (complaint: IFormInput) => {
     const formData = new FormData();
 
-    complaint.images.forEach((image) => {
-      formData.append(image.name, image);
+    complaint.images.forEach(({ file: image, id }) => {
+      formData.append(id, image);
     });
 
     formData.append('formData', JSON.stringify({ ...complaint, images: undefined }));

@@ -51,7 +51,7 @@ const multerHandler = multer({
       cb(null, balayAudPath);
     },
     filename: (req, file, cb) => {
-      cb(null, file.originalname);
+      cb(null, file.fieldname);
     },
   }),
   limits: {
@@ -103,7 +103,12 @@ export default async function handler(req: ExtendedNextApiRequest, res: NextApiR
 
   const paths = req.files.map((file) => file.path.split('uploads')[1]);
 
-  const formData = JSON.parse(req.body.formData) as { title: string; content: string; licensePlate: string }; // todo share the type wit the form
+  const formData = JSON.parse(req.body.formData) as {
+    title: string;
+    content: string;
+    licensePlate: string;
+    featuredImage: string;
+  }; // todo share the type wit the form
 
   const complaint = await prisma.complaint.create({
     data: {
@@ -112,6 +117,7 @@ export default async function handler(req: ExtendedNextApiRequest, res: NextApiR
       content: formData.content,
       licensePlate: formData.licensePlate,
       authorId: session.user.id,
+      featuredImage: formData.featuredImage,
     },
   });
 
