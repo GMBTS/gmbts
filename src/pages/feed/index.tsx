@@ -1,8 +1,10 @@
 import { Button, Typography } from '@mui/material';
-import { Complaint, PrismaClient } from '@prisma/client';
+import { Complaint } from '@prisma/client';
 import dayjs from 'dayjs';
 import Image from 'next/image';
 import Link from 'next/link';
+
+import { prisma } from '@/db/prisma';
 
 const FeedImage: React.FC<{ url: string; id: string }> = ({ url, id }) => {
   return (
@@ -57,7 +59,6 @@ const Feed: React.FC<{ complaints: Complaint[] }> = ({ complaints }) => {
 export default Feed;
 
 export async function getServerSideProps() {
-  const prisma = new PrismaClient();
   const complaints = await prisma.complaint.findMany({ orderBy: { createdAt: 'desc' } });
 
   const postsToReturn = complaints.map((complaint) => ({
