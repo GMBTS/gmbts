@@ -1,10 +1,9 @@
-import { PrismaClient } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 
-import { authOptions } from './[...nextauth]';
+import { prisma } from '@/db/prisma';
 
-const prisma = new PrismaClient();
+import { authOptions } from './[...nextauth]';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

@@ -13,19 +13,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 
-  const splittedPath = req.query.url.split('/');
-  const originalName = splittedPath[splittedPath.length - 1];
-  const strippedDownPath = splittedPath.slice(0, splittedPath.length - 1).join('/');
+  try {
+    const splittedPath = req.query.url.split('/');
+    const originalName = splittedPath[splittedPath.length - 1];
+    const strippedDownPath = splittedPath.slice(0, splittedPath.length - 1).join('/');
 
-  const filePath = path.resolve(__dirname, `../../../../../../uploads/${strippedDownPath}/400-${originalName}`);
-  let imageBuffer;
-  if (fs.existsSync(filePath)) {
-    imageBuffer = fs.readFileSync(filePath);
-  } else {
-    const originalImagePath = path.resolve(__dirname, `../../../../../../uploads/${req.query.url}`);
-    imageBuffer = fs.readFileSync(originalImagePath);
+    const filePath = path.resolve(__dirname, `../../../../../../uploads/${strippedDownPath}/400-${originalName}`);
+    let imageBuffer;
+    if (fs.existsSync(filePath)) {
+      imageBuffer = fs.readFileSync(filePath);
+    } else if (fs.existsSync(path.resolve(__dirname, `../../../../../../uploads/${req.query.url}`))) {
+      const originalImagePath = path.resolve(__dirname, `../../../../../../uploads/${req.query.url}`);
+      imageBuffer = fs.readFileSync(originalImagePath);
+
+      res.setHeader('Content-Type', 'image/jpg');
+      res.send(imageBuffer);
+    } else {
+      res.status(404).send('Not found');
+      return;
+    }
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).send('Internal server error');
+    return;
   }
-
-  res.setHeader('Content-Type', 'image/jpg');
-  res.send(imageBuffer);
 }
+
+export const config = {
+  api: {
+    externalResolver: true,
+  },
+};

@@ -8,6 +8,8 @@ import nextConnect from 'next-connect';
 import path from 'path';
 import * as uuid from 'uuid';
 
+import { prisma } from '@/db/prisma';
+
 import { authOptions } from '../auth/[...nextauth]';
 
 var channel: amqp.Channel, connection: amqp.Connection; //global variables
@@ -88,7 +90,6 @@ export default async function handler(req: ExtendedNextApiRequest, res: NextApiR
     return;
   }
 
-  const prisma = new PrismaClient();
   const complaintId = uuid.v4();
 
   const mwreq = req as ExtendedNextApiRequest;

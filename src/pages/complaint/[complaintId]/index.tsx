@@ -1,9 +1,11 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { IconButton, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
-import { Complaint, PrismaClient } from '@prisma/client';
+import { Complaint } from '@prisma/client';
 import Carousel from 'better-react-carousel';
 import Link from 'next/link';
+
+import { prisma } from '@/db/prisma';
 
 const ViewComplaint: React.FC<{ complaint: Complaint }> = ({ complaint }) => {
   return (
@@ -76,7 +78,6 @@ export default ViewComplaint;
 // todo check what is the real type here
 export async function getServerSideProps(ctx: any) {
   const complaintId = ctx.query.complaintId;
-  const prisma = new PrismaClient(); // todo add this to app context
   const complaint = await prisma.complaint.findUnique({
     where: {
       complaintId,
