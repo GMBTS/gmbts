@@ -28,7 +28,7 @@ async function connectQueue() {
 connectQueue();
 
 async function sendData(paths: string[]) {
-  return channel.sendToQueue('test-queue-1', Buffer.from(JSON.stringify(paths)));
+  return channel?.sendToQueue('test-queue-1', Buffer.from(JSON.stringify(paths)));
 }
 
 type ExtendedNextApiRequest = NextApiRequest & {
@@ -131,6 +131,8 @@ export default async function handler(req: ExtendedNextApiRequest, res: NextApiR
     },
   });
   await sendData(paths);
+
+  await res.revalidate('/feed');
 
   res.status(200).send({ results: true });
 }

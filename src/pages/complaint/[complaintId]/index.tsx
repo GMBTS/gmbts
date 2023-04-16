@@ -3,6 +3,8 @@ import { IconButton, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import { Complaint } from '@prisma/client';
 import Carousel from 'better-react-carousel';
+import { GetStaticPaths, GetStaticProps } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { prisma } from '@/db/prisma';
@@ -48,12 +50,17 @@ const ViewComplaint: React.FC<{ complaint: Complaint }> = ({ complaint }) => {
             mobileBreakpoint={600}
           >
             {complaint.images.length > 0 &&
-              complaint.images.map((image) => (
-                <Carousel.Item>
-                  <img
+              complaint.images.map((image, index) => (
+                <Carousel.Item key={image}>
+                  <Image
                     style={{ height: 400, objectFit: 'cover', textAlign: 'center', borderRadius: '4%' }}
                     src={`/api/complaint/images/download?url=${image}`}
-                    loading="lazy"
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                    // property={index === 0}
+                    width={400}
+                    height={400}
+                    alt="alt"
+                    // placeholder="blur"
                   />
                 </Carousel.Item>
               ))}
@@ -75,9 +82,15 @@ const ViewComplaint: React.FC<{ complaint: Complaint }> = ({ complaint }) => {
 
 export default ViewComplaint;
 
-// todo check what is the real type here
-export async function getServerSideProps(ctx: any) {
-  const complaintId = ctx.query.complaintId;
+export const getStaticProps: GetStaticProps = async (context) => {
+  const complaintId = context?.params?.complaintId;
+
+  if (!complaintId || typeof complaintId !== 'string') {
+    return {
+      notFound: true,
+    };
+  }
+
   const complaint = await prisma.complaint.findUnique({
     where: {
       complaintId,
@@ -98,4 +111,11 @@ export async function getServerSideProps(ctx: any) {
       },
     },
   };
-}
+};
+
+export const getStaticPaths: GetStaticPaths<{ complaintId: string }> = async () => {
+  return {
+    paths: [], //indicates that no page needs be created at build time
+    fallback: 'blocking', //indicates the type of fallback
+  };
+};

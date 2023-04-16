@@ -6,14 +6,14 @@ import Link from 'next/link';
 
 import { prisma } from '@/db/prisma';
 
-const FeedImage: React.FC<{ url: string; id: string }> = ({ url, id }) => {
+const FeedImage: React.FC<{ url: string; id: string; lazy: boolean }> = ({ url, id, lazy }) => {
   return (
     <div>
       <Link href={`/complaint/${id}`}>
         <Image
           style={{ height: 400, objectFit: 'cover', textAlign: 'center', borderRadius: '4%' }}
           src={`/api/complaint/images/download?url=${url}`}
-          loading="lazy"
+          loading={lazy ? 'lazy' : 'eager'}
           alt={`feed image ${id}`}
           width={400}
           height={400}
@@ -28,7 +28,7 @@ const Feed: React.FC<{ complaints: Complaint[] }> = ({ complaints }) => {
     <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', height: '100vh', gap: 20 }}>
       <h1>Feed</h1>
 
-      {complaints.map((complaint) => (
+      {complaints.map((complaint, complaintIndex) => (
         <div
           key={complaint.complaintId}
           style={{
@@ -39,7 +39,9 @@ const Feed: React.FC<{ complaints: Complaint[] }> = ({ complaints }) => {
           }}
         >
           <div style={{ padding: '24px 36px', border: 'solid', borderRadius: '4px', alignItems: 'flex-end' }}>
-            {complaint.images.length > 0 && <FeedImage url={complaint.images[0]} id={complaint.complaintId} />}
+            {complaint.images.length > 0 && (
+              <FeedImage url={complaint.images[0]} id={complaint.complaintId} lazy={complaintIndex !== 0} />
+            )}
             <div style={{ display: 'flex', gap: 20, justifyContent: 'space-between', marginTop: 8 }}>
               <Typography variant="caption">{complaint.title}</Typography>
               <Typography variant="caption">{complaint.content}</Typography>
@@ -58,7 +60,7 @@ const Feed: React.FC<{ complaints: Complaint[] }> = ({ complaints }) => {
 
 export default Feed;
 
-export async function getServerSideProps() {
+export async function getStaticProps() {
   const complaints = await prisma.complaint.findMany({ orderBy: { createdAt: 'desc' } });
 
   const postsToReturn = complaints.map((complaint) => ({

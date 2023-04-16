@@ -22,6 +22,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let imageBuffer;
     if (fs.existsSync(filePath)) {
       imageBuffer = fs.readFileSync(filePath);
+
+      res.setHeader('Content-Type', 'image/jpg');
+      res.send(imageBuffer);
     } else if (fs.existsSync(path.resolve(__dirname, `../../../../../../uploads/${req.query.url}`))) {
       const originalImagePath = path.resolve(__dirname, `../../../../../../uploads/${req.query.url}`);
       imageBuffer = fs.readFileSync(originalImagePath);
@@ -30,8 +33,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.send(imageBuffer);
     } else {
       res.status(404).send('Not found');
-      return;
     }
+    return;
   } catch (error) {
     console.error(error);
 
@@ -39,9 +42,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 }
-
-export const config = {
-  api: {
-    externalResolver: true,
-  },
-};
