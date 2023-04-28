@@ -9,6 +9,7 @@ import path from 'path';
 import * as uuid from 'uuid';
 
 import { prisma } from '@/db/prisma';
+import { IMAGE_RESIZE_QUEUE } from '@/utils/constants';
 
 import { authOptions } from '../auth/[...nextauth]';
 
@@ -19,7 +20,7 @@ async function connectQueue() {
     connection = await amqp.connect('amqp://localhost:5672');
     channel = await connection.createChannel();
 
-    await channel.assertQueue('test-queue-1');
+    await channel.assertQueue(IMAGE_RESIZE_QUEUE);
   } catch (error) {
     console.log(error);
   }
@@ -28,7 +29,7 @@ async function connectQueue() {
 connectQueue();
 
 async function sendData(paths: string[]) {
-  return channel.sendToQueue('test-queue-1', Buffer.from(JSON.stringify(paths)));
+  return channel?.sendToQueue(IMAGE_RESIZE_QUEUE, Buffer.from(JSON.stringify(paths)));
 }
 
 type ExtendedNextApiRequest = NextApiRequest & {
@@ -131,6 +132,8 @@ export default async function handler(req: ExtendedNextApiRequest, res: NextApiR
     },
   });
   await sendData(paths);
+
+  await res.revalidate('/feed');
 
   res.status(200).send({ results: true });
 }

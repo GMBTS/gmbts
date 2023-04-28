@@ -48,7 +48,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  AutherComplainets  Complaint[]        @relation("AutherComplainets")
+  AuthorComplainets  Complaint[]        @relation("AuthorComplainets")
   ApproverComplaints Complaint[]        @relation("ApproverComplaints")
   WhiteListAccounts  WhiteListAccounts?
 }
@@ -76,7 +76,7 @@ model Complaint {
   isAnonymous Boolean   @default(true)
   approvedAt  DateTime?
   approverId  String?
-  Auther      User      @relation("AutherComplainets", fields: [authorId], references: [id])
+  Author      User      @relation("AuthorComplainets", fields: [authorId], references: [id])
   Approver    User?     @relation("ApproverComplaints", fields: [approverId], references: [id])
 }
 

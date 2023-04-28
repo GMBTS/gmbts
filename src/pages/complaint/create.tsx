@@ -4,6 +4,7 @@ import { IconButton, TextField, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import { useDropzone } from 'react-dropzone';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import * as uuid from 'uuid';
@@ -138,7 +139,7 @@ const NewPost = () => {
         >
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <TextField
-              {...register('title', { required: true, maxLength: 20 })}
+              {...register('title', { required: 'This field is required' })}
               label="Title"
               variant="standard"
               error={!!errors.title}
@@ -146,16 +147,18 @@ const NewPost = () => {
               style={{ marginBottom: 24 }}
             />
             <TextField
-              {...register('licensePlate')}
-              type="number"
+              {...register('licensePlate', { required: 'This field is required', pattern: /[1-9]/, max: 8, min: 6 })}
               variant="standard"
               label="License Plate"
               error={!!errors.licensePlate}
               helperText={errors?.licensePlate?.message}
               style={{ marginBottom: 24 }}
+              InputProps={{
+                placeholder: '77-777-77',
+              }}
             />
             <TextField
-              {...register('content')}
+              {...register('content', { required: 'This field is required' })}
               type="text"
               variant="standard"
               label="Description"
@@ -261,7 +264,7 @@ const NewPost = () => {
             {isError && <div>Error</div>}
           </div>
 
-          <Button component={Link} variant="text" href="/feed">
+          <Button component={Link} variant="contained" color="secondary" href="/feed">
             {`< Back to feed`}
           </Button>
         </div>

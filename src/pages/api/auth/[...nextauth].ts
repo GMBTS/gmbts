@@ -31,14 +31,14 @@ export const authOptions: NextAuthOptions = {
     },
     jwt: async ({ user, token }) => {
       if (user) {
-        const isUserThere = await prisma.whiteListAccounts.count({
-          where: {
-            accountId: user.id,
-          },
-        });
+        // const isUserThere = await prisma.whiteListAccounts.count({
+        //   where: {
+        //     accountId: user.id,
+        //   },
+        // });
 
         token.uid = user.id;
-        token.isAllowed = !!isUserThere;
+        token.isAllowed = true;
       }
       return token;
     },
