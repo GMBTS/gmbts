@@ -7,7 +7,7 @@
 
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --background-end-rgb: 200, 200, 200;
 
   --primary-glow: conic-gradient(
     from 180deg at 50% 50%,
@@ -34,7 +34,7 @@
     #00000080
   );
 
-  --callout-rgb: 238, 240, 241;
+  --callout-rgb: 255, 220, 241;
   --callout-border-rgb: 172, 175, 176;
   --card-rgb: 180, 185, 188;
   --card-border-rgb: 131, 134, 135;
@@ -66,7 +66,7 @@
       #ffffff80
     );
 
-    --callout-rgb: 20, 20, 20;
+    --callout-rgb: 200, 200, 20;
     --callout-border-rgb: 108, 108, 108;
     --card-rgb: 100, 100, 100;
     --card-border-rgb: 200, 200, 200;
