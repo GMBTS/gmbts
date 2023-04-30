@@ -72,10 +72,10 @@ const NewPost = () => {
     (pos: GeolocationPosition) => {
       const crd = pos.coords;
 
-      console.log('Your current position is:');
-      console.log(`Latitude : ${crd.latitude}`);
-      console.log(`Longitude: ${crd.longitude}`);
-      console.log(`More or less ${crd.accuracy} meters.`);
+      // console.log('Your current position is:');
+      // console.log(`Latitude : ${crd.latitude}`);
+      // console.log(`Longitude: ${crd.longitude}`);
+      // console.log(`More or less ${crd.accuracy} meters.`);
 
       setLocation(crd);
 
@@ -147,9 +147,10 @@ const NewPost = () => {
               style={{ marginBottom: 24 }}
             />
             <TextField
-              {...register('licensePlate', { required: 'This field is required', pattern: /[1-9]/, max: 8, min: 6 })}
+              {...register('licensePlate', { required: 'This field is required' })}
               variant="standard"
               label="License Plate"
+              type="number"
               error={!!errors.licensePlate}
               helperText={errors?.licensePlate?.message}
               style={{ marginBottom: 24 }}

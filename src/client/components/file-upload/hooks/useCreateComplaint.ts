@@ -17,7 +17,7 @@ const useCreateComplaint = () => {
       headers: { 'content-type': 'multipart/form-data' },
       onUploadProgress: (event) => {
         if (event.total) {
-          console.log(`Current progress:`, Math.round((event.loaded * 100) / event.total));
+          // console.log(`Current progress:`, Math.round((event.loaded * 100) / event.total));
         }
       },
     };

@@ -5,11 +5,7 @@ import { withAuth } from 'next-auth/middleware';
 export default withAuth({
   callbacks: {
     authorized({ req, token }) {
-      if (req.nextUrl.pathname === '/about') {
-        return true;
-      }
-
-      return true;
+      return !!token?.email ?? false;
     },
   },
 });

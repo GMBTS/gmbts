@@ -8,6 +8,8 @@ import { SessionProvider, useSession } from 'next-auth/react';
 import { useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
+import Layout from '@/client/components/layout';
+
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const queryClient = new QueryClient();
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -26,7 +28,9 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
     <SessionProvider session={pageProps.session}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider theme={theme}>
-          <Component {...pageProps} />
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
         </ThemeProvider>
       </QueryClientProvider>
     </SessionProvider>
