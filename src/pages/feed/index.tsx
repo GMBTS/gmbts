@@ -23,7 +23,7 @@ const FeedImage: React.FC<{ url: string; id: string; lazy: boolean }> = ({ url, 
     <div>
       <Link href={`/complaint/${id}`}>
         <Image
-          style={{ objectFit: 'cover', textAlign: 'center' }}
+          style={{ objectFit: 'cover', textAlign: 'center', maxWidth: 390 }}
           src={`/api/complaint/images/download?url=${url}`}
           loading={lazy ? 'lazy' : 'eager'}
           alt={`feed image ${id}`}

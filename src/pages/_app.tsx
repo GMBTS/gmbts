@@ -19,6 +19,12 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
     () =>
       createTheme({
         palette: {
+          primary: {
+            main: '#e93c0c',
+          },
+          secondary: {
+            main: '#8694bd',
+          },
           mode: prefersDarkMode ? 'dark' : 'light',
         },
       }),
