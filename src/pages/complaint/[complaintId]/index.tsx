@@ -1,4 +1,5 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import { Complaint } from '@prisma/client';
@@ -6,10 +7,13 @@ import Carousel from 'better-react-carousel';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 
 import { prisma } from '@/db/prisma';
 
 const ViewComplaint: React.FC<{ complaint: Complaint }> = ({ complaint }) => {
+  const { data: session } = useSession();
+
   return (
     <div style={{ height: '100vh', padding: 16 }}>
       <div style={{ display: 'flex', flexDirection: 'column' }} />
@@ -69,6 +73,12 @@ const ViewComplaint: React.FC<{ complaint: Complaint }> = ({ complaint }) => {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
+        {complaint.authorId === session?.user?.id && (
+          <Button variant="contained" style={{ marginTop: 36, backgroundColor: 'red' }}>
+            <DeleteIcon fontSize="small" />
+            Delete
+          </Button>
+        )}
         <Button component={Link} variant="contained" color="secondary" href="/feed" style={{ marginTop: 36 }}>
           {`< Back to feed`}
         </Button>
