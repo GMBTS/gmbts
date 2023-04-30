@@ -9,10 +9,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
+import { useDeleteComplaint } from '@/client/components/complaint/delete/hooks';
 import { prisma } from '@/db/prisma';
 
 const ViewComplaint: React.FC<{ complaint: Complaint }> = ({ complaint }) => {
   const { data: session } = useSession();
+  const deleteComplaint = useDeleteComplaint();
 
   return (
     <div style={{ height: '100vh', padding: 16 }}>
@@ -74,7 +76,11 @@ const ViewComplaint: React.FC<{ complaint: Complaint }> = ({ complaint }) => {
 
       <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
         {complaint.authorId === session?.user?.id && (
-          <Button variant="contained" style={{ marginTop: 36, backgroundColor: 'red' }}>
+          <Button
+            variant="contained"
+            style={{ marginTop: 36, backgroundColor: 'red' }}
+            onClick={() => deleteComplaint.mutateAsync({ complaintId: complaint.complaintId })}
+          >
             <DeleteIcon fontSize="small" />
             Delete
           </Button>
