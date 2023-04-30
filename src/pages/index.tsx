@@ -14,11 +14,7 @@ export default function Home() {
 
   return (
     <>
-      {session?.user?.email ? (
-        <Button onClick={() => signOut()}>singe out</Button>
-      ) : (
-        <Button onClick={() => signIn()}>singe In</Button>
-      )}
+      {session?.user?.email ? null : <Button onClick={() => signIn()}>singe In</Button>}
       <Head>
         <title>Give me back the sidewalk</title>
         <meta name="description" content="Give me back the sidewalk" />
