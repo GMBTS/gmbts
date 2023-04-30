@@ -4,7 +4,8 @@ import { ThemeProvider } from '@emotion/react';
 import { createTheme } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import type { AppProps } from 'next/app';
-import { SessionProvider, useSession } from 'next-auth/react';
+import Script from 'next/script';
+import { SessionProvider } from 'next-auth/react';
 import { useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
@@ -25,14 +26,28 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
   );
 
   return (
-    <SessionProvider session={pageProps.session}>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider theme={theme}>
-          <Layout>
-            <Component {...pageProps} />
-          </Layout>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </SessionProvider>
+    <>
+      <Script strategy="lazyOnload" src="https://www.googletagmanager.com/gtag/js?id=G-MRGPQ3LEYF" />
+      <Script strategy="lazyOnload">
+        {`
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', 'G-MRGPQ3LEYF', {
+                    page_path: window.location.pathname,
+                    });
+                `}
+      </Script>
+
+      <SessionProvider session={pageProps.session}>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider theme={theme}>
+            <Layout>
+              <Component {...pageProps} />
+            </Layout>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </SessionProvider>
+    </>
   );
 }
