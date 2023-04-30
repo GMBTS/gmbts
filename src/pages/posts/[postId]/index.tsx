@@ -10,10 +10,6 @@ type Post = {
 };
 
 const Posts = ({ post }: { post: Post }) => {
-  console.log({
-    post,
-  });
-
   return (
     <div style={{ height: '' }}>
       <h1>{post.title}</h1>
