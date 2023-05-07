@@ -5,7 +5,15 @@ import { withAuth } from 'next-auth/middleware';
 export default withAuth({
   callbacks: {
     authorized({ req, token }) {
-      return !!token?.email ?? false;
+      if (!token?.email) {
+        return false;
+      }
+
+      if (req.nextUrl.pathname === '/admin') {
+        return token.email === process.env.SUPPER_DUPER_ADMIN_EMAIL;
+      }
+
+      return true;
     },
   },
 });

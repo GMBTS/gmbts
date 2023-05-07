@@ -17,7 +17,7 @@ const ViewComplaint: React.FC<{ complaint: Complaint }> = ({ complaint }) => {
   const deleteComplaint = useDeleteComplaint();
 
   return (
-    <div style={{ height: '100vh', padding: 16 }}>
+    <div style={{ height: 'calc(100vh - 56px)', padding: 16 }}>
       <div style={{ display: 'flex', flexDirection: 'column' }} />
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <div>

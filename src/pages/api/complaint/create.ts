@@ -1,5 +1,3 @@
-import { PrismaClient } from '@prisma/client';
-import amqp from 'amqplib';
 import fs from 'fs';
 import multer from 'multer';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -9,28 +7,8 @@ import path from 'path';
 import * as uuid from 'uuid';
 
 import { prisma } from '@/db/prisma';
-import { IMAGE_RESIZE_QUEUE } from '@/utils/constants';
 
 import { authOptions } from '../auth/[...nextauth]';
-
-var channel: amqp.Channel, connection: amqp.Connection; //global variables
-async function connectQueue() {
-  if (channel && connection) return;
-  try {
-    connection = await amqp.connect('amqp://localhost:5672');
-    channel = await connection.createChannel();
-
-    await channel.assertQueue(IMAGE_RESIZE_QUEUE);
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-connectQueue();
-
-async function sendData(paths: string[]) {
-  return channel?.sendToQueue(IMAGE_RESIZE_QUEUE, Buffer.from(JSON.stringify(paths)));
-}
 
 type ExtendedNextApiRequest = NextApiRequest & {
   files: Express.Multer.File[];
@@ -131,7 +109,6 @@ export default async function handler(req: ExtendedNextApiRequest, res: NextApiR
       images: paths,
     },
   });
-  await sendData(paths);
 
   await res.revalidate('/feed');
 

@@ -119,7 +119,7 @@ const NewPost = () => {
   }, []);
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: 'calc(100vh - 56px)', display: 'flex', flexDirection: 'column' }}>
       <div style={{ textAlign: 'center', marginTop: 36 }}>
         <Typography variant="h4">Create a complaint</Typography>
       </div>
