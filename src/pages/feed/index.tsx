@@ -134,6 +134,10 @@ export async function getStaticProps() {
   const postsToReturn = complaints.map((complaint) => ({
     ...complaint,
     createdAt: complaint.createdAt.toISOString(),
+    Author: {
+      ...complaint.Author,
+      createdAt: complaint.Author.createdAt.toISOString(),
+    },
   }));
 
   return {
