@@ -12,7 +12,7 @@ import { useSession } from 'next-auth/react';
 import { useDeleteComplaint } from '@/client/components/complaint/delete/hooks';
 import { prisma } from '@/db/prisma';
 
-const ViewComplaint: React.FC<{ complaint: Complaint }> = ({ complaint }) => {
+const ViewComplaint: React.FC<{ complaint: Complaint; cdnEndpoint: string }> = ({ complaint, cdnEndpoint }) => {
   const { data: session } = useSession();
   const deleteComplaint = useDeleteComplaint();
 
@@ -60,7 +60,7 @@ const ViewComplaint: React.FC<{ complaint: Complaint }> = ({ complaint }) => {
                 <Carousel.Item key={image}>
                   <Image
                     style={{ height: 400, objectFit: 'cover', textAlign: 'center', borderRadius: '4%' }}
-                    src={`/api/complaint/images/download?url=${image}`}
+                    src={`${cdnEndpoint}/${image}`}
                     loading={index === 0 ? 'eager' : 'lazy'}
                     // property={index === 0}
                     width={400}
@@ -100,6 +100,7 @@ export default ViewComplaint;
 
 export const getStaticProps: GetStaticProps = async (context) => {
   const complaintId = context?.params?.complaintId;
+  const cdnEndpoint = process.env.CDN_ENDPOINT;
 
   if (!complaintId || typeof complaintId !== 'string') {
     return {
@@ -125,6 +126,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
         ...complaint, /// todo add this to react-query context
         createdAt: complaint.createdAt.toISOString(),
       },
+      cdnEndpoint,
     },
   };
 };

@@ -1,6 +1,5 @@
-import fs from 'fs';
+import S3 from 'aws-sdk/clients/s3';
 import { NextApiRequest, NextApiResponse } from 'next';
-import path from 'path';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -13,28 +12,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 
+  const s3 = new S3({
+    apiVersion: '2006-03-01',
+  });
+
   try {
-    const splittedPath = req.query.url.split('/');
-    const originalName = splittedPath[splittedPath.length - 1];
-    const strippedDownPath = splittedPath.slice(0, splittedPath.length - 1).join('/');
+    const signedURL = await s3.getSignedUrlPromise('getObject', {
+      Bucket: process.env.BUCKET_NAME,
+      Key: req.query.url,
+      Expires: 60,
+    });
 
-    const filePath = path.resolve(__dirname, `../../../../../../uploads/${strippedDownPath}/400-${originalName}`);
-    let imageBuffer;
-    if (fs.existsSync(filePath)) {
-      imageBuffer = fs.readFileSync(filePath);
-
-      res.setHeader('Content-Type', 'image/jpg');
-      res.send(imageBuffer);
-    } else if (fs.existsSync(path.resolve(__dirname, `../../../../../../uploads/${req.query.url}`))) {
-      const originalImagePath = path.resolve(__dirname, `../../../../../../uploads/${req.query.url}`);
-      imageBuffer = fs.readFileSync(originalImagePath);
-
-      res.setHeader('Content-Type', 'image/jpg');
-      res.send(imageBuffer);
-    } else {
-      res.status(404).send('Not found');
-    }
-    return;
+    res.status(200).send(signedURL);
   } catch (error) {
     console.error(error);
 

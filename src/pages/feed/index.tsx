@@ -13,22 +13,35 @@ import {
 import Avatar from '@mui/material/Avatar';
 import { Complaint, User } from '@prisma/client';
 import dayjs from 'dayjs';
+import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { prisma } from '@/db/prisma';
 
-const FeedImage: React.FC<{ url: string; id: string; lazy: boolean }> = ({ url, id, lazy }) => {
+const FeedImage: React.FC<{ url: string; id: string; lazy: boolean; cdnEndpoint: string }> = ({
+  url,
+  id,
+  lazy,
+  cdnEndpoint,
+}) => {
   return (
-    <div>
+    <div
+      style={{
+        position: 'relative',
+        maxWidth: 700,
+        aspectRatio: '16/9',
+        maxHeight: 500,
+      }}
+    >
       <Link href={`/complaint/${id}`}>
         <Image
-          style={{ objectFit: 'cover', textAlign: 'center', maxWidth: 390 }}
-          src={`/api/complaint/images/download?url=${url}`}
+          style={{ objectFit: 'cover' }}
+          src={`${cdnEndpoint}/${url}`}
           loading={lazy ? 'lazy' : 'eager'}
           alt={`feed image ${id}`}
-          width={700}
-          height={400}
+          fill
+          sizes="(max-width: 700px) 100vw, 700px"
         />
       </Link>
     </div>
@@ -38,22 +51,23 @@ const FeedImage: React.FC<{ url: string; id: string; lazy: boolean }> = ({ url, 
 const FeedItem = ({
   complaint,
   complaintIndex,
+  cdnEndpoint,
 }: {
   complaint: Complaint & {
     Author: User;
   };
   complaintIndex: number;
+  cdnEndpoint: string;
 }) => {
   return (
     <div
       style={{
         margin: '8px 0',
         border: 1,
-
-        // display: 'flex',
+        width: '100%',
       }}
     >
-      <Card>
+      <Card style={{ width: '90%', margin: 'auto', maxWidth: 700 }}>
         <CardHeader
           avatar={<Avatar src={complaint.Author.image ?? undefined} alt={complaint.Author.name ?? undefined} />}
           title={complaint.Author.name}
@@ -64,6 +78,7 @@ const FeedItem = ({
           url={complaint.images[0]}
           id={complaint.complaintId}
           lazy={complaintIndex !== 0}
+          cdnEndpoint={cdnEndpoint}
         />
         <CardContent>
           <Typography paragraph variant="body1">
@@ -94,35 +109,53 @@ const FeedItem = ({
 
 const Feed: React.FC<{
   complaints: Array<Complaint & { Author: User }>;
-}> = ({ complaints }) => {
+  cdnEndpoint: string;
+}> = ({ complaints, cdnEndpoint }) => {
   return (
-    <div>
-      <Typography style={{ textAlign: 'center' }} variant="h2">
-        Feed
-      </Typography>
+    <>
+      <Head>
+        <title>Sidewalk complaints feed</title>
+      </Head>
+      <div>
+        <Typography style={{ textAlign: 'center' }} variant="h2">
+          Feed
+        </Typography>
 
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          flexDirection: 'column',
-          gap: 20,
-          marginBottom: 36,
-        }}
-      >
-        {complaints.map((complaint, complaintIndex) => (
-          <FeedItem key={complaint.complaintId} complaint={complaint} complaintIndex={complaintIndex} />
-        ))}
-      </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            flexDirection: 'column',
+            gap: 20,
+            marginBottom: 36,
+          }}
+        >
+          {complaints.map((complaint, complaintIndex) => (
+            <FeedItem
+              key={complaint.complaintId}
+              complaint={complaint}
+              complaintIndex={complaintIndex}
+              cdnEndpoint={cdnEndpoint}
+            />
+          ))}
+        </div>
 
-      <div
-        style={{ position: 'fixed', bottom: 0, backgroundColor: 'gray', width: '100%', padding: 8, borderRadius: '2%' }}
-      >
-        <Button component={Link} href="/complaint/create" variant="contained" style={{ marginLeft: 24 }}>
-          + Create a new complaint
-        </Button>
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            backgroundColor: 'gray',
+            width: '100%',
+            padding: 8,
+            borderRadius: '2%',
+          }}
+        >
+          <Button component={Link} href="/complaint/create" variant="contained" style={{ marginLeft: 24 }}>
+            + Create a new complaint
+          </Button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -130,6 +163,7 @@ export default Feed;
 
 export async function getStaticProps() {
   const complaints = await prisma.complaint.findMany({ orderBy: { createdAt: 'desc' }, include: { Author: true } });
+  const cdnEndpoint = process.env.CDN_ENDPOINT;
 
   const postsToReturn = complaints.map((complaint) => ({
     ...complaint,
@@ -143,6 +177,7 @@ export async function getStaticProps() {
   return {
     props: {
       complaints: postsToReturn,
-    }, // will be passed to the page component as props
+      cdnEndpoint, // todo find better way to pass this
+    },
   };
 }

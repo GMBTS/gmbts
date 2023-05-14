@@ -1,9 +1,9 @@
-import fs from 'fs';
+import S3 from 'aws-sdk/clients/s3';
 import multer from 'multer';
+import multerS3 from 'multer-s3';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import nextConnect from 'next-connect';
-import path from 'path';
 import * as uuid from 'uuid';
 
 import { prisma } from '@/db/prisma';
@@ -11,37 +11,37 @@ import { prisma } from '@/db/prisma';
 import { authOptions } from '../auth/[...nextauth]';
 
 type ExtendedNextApiRequest = NextApiRequest & {
-  files: Express.Multer.File[];
+  files: Express.MulterS3.File[];
   context: {
     userId: string;
     complaintId: string;
   };
 };
 
-const multerHandler = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      const realReq = req as unknown as ExtendedNextApiRequest;
+const multerHandler = (s3: S3) =>
+  multer({
+    storage: multerS3({
+      s3: s3, // todo make this singleton
+      bucket: process.env.BUCKET_NAME ?? '',
 
-      const userId = realReq.context.userId;
-      const complaintId = realReq.context.complaintId;
+      metadata: function (req, file, cb) {
+        cb(null, { fieldName: file.fieldname, orignalName: file.originalname });
+      },
+      key: function (req, file, cb) {
+        const realReq = req as unknown as ExtendedNextApiRequest;
 
-      const balayAudPath = path.join(__dirname, `../../../../../uploads/${userId}/${complaintId}`);
-
-      fs.mkdirSync(balayAudPath, { recursive: true });
-      cb(null, balayAudPath);
+        const userId = realReq.context.userId;
+        const complaintId = realReq.context.complaintId;
+        cb(null, `${userId}/${complaintId}/${file.fieldname}`);
+      },
+    }),
+    limits: {
+      fileSize: 10 * 1024 * 1024,
+      files: 5,
     },
-    filename: (req, file, cb) => {
-      cb(null, file.fieldname);
-    },
-  }),
-  limits: {
-    fileSize: 10 * 1024 * 1024,
-    files: 5,
-  },
-});
+  });
 
-function createUploadMiddleware() {
+function createUploadMiddleware(s3: S3) {
   const apiRoute = nextConnect<NextApiRequest, NextApiResponse>({
     onError(error, req, res) {
       res.status(501).json({ error: `Sorry something Happened! ${error.message}` });
@@ -51,7 +51,7 @@ function createUploadMiddleware() {
     },
   });
 
-  apiRoute.use(multerHandler.any());
+  apiRoute.use(multerHandler(s3).any());
 
   return apiRoute;
 }
@@ -74,14 +74,18 @@ export default async function handler(req: ExtendedNextApiRequest, res: NextApiR
   const mwreq = req as ExtendedNextApiRequest;
   mwreq.context = { userId: session.user.id, complaintId };
 
-  await createUploadMiddleware().run(mwreq, res);
+  const s3 = new S3({
+    apiVersion: '2006-03-01',
+  });
+
+  await createUploadMiddleware(s3).run(mwreq, res);
 
   if (!req.files) {
     res.status(400).send('No files were uploaded.');
     return;
   }
 
-  const paths = req.files.map((file) => file.path.split('uploads')[1]);
+  const paths = req.files.map((file) => file.key);
 
   const formData = JSON.parse(req.body.formData) as {
     title: string;
