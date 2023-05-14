@@ -76,7 +76,7 @@ export default function AdminPage({
                         <ListItemAvatar>
                           <Avatar alt={complaint.title}>
                             <Image
-                              src={`/api/complaint/images/download?url=${complaint.images[0]}`}
+                              src={`https://dkuv4ptlgt9yb.cloudfront.net/${complaint.images[0]}`}
                               width={56}
                               height={56}
                               alt={complaint.title}
