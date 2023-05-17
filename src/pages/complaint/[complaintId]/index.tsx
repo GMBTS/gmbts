@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import { Complaint } from '@prisma/client';
 import Carousel from 'better-react-carousel';
 import { GetStaticPaths, GetStaticProps } from 'next';
+import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -17,82 +18,94 @@ const ViewComplaint: React.FC<{ complaint: Complaint; cdnEndpoint: string }> = (
   const deleteComplaint = useDeleteComplaint();
 
   return (
-    <div style={{ height: 'calc(100vh - 56px)', padding: 16 }}>
-      <div style={{ display: 'flex', flexDirection: 'column' }} />
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <div>
-          <IconButton size="large" color="inherit" component={Link} href="/feed">
-            <ArrowBackIcon />
-          </IconButton>
+    <>
+      <Head>
+        <title>GMBTS | complaints details</title>
+        <meta property="og:title" content={complaint.title} />
+        <meta name="description" content={complaint.content ?? ''} key="desc" />
+        <meta property="og:description" content={complaint.content ?? ''} />
+        <meta
+          property="og:image"
+          content={`/_next/image?url=${encodeURIComponent(`${cdnEndpoint}/${complaint.images[0]}`)}&w=640&q=20`}
+        />
+        <meta property="og:url" content={`complaint/${complaint.complaintId}`} />
+        <meta property="og:type" content="article" />
+      </Head>
+      <div style={{ height: 'calc(100vh - 48px)', padding: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }} />
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div>
+            <IconButton size="large" color="inherit" component={Link} href="/feed">
+              <ArrowBackIcon />
+            </IconButton>
+          </div>
+
+          <Typography style={{ textAlign: 'center', padding: 24, flex: '1', marginRight: 48 }} variant="h4">
+            {complaint.title}
+          </Typography>
         </div>
 
-        <Typography style={{ textAlign: 'center', padding: 24, flex: '1', marginRight: 48 }} variant="h4">
-          {complaint.title}
-        </Typography>
-      </div>
+        <div id="content" style={{ width: '100%', textAlign: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Typography variant="body1">Content:</Typography>
+            &nbsp;
+            <Typography variant="caption">{complaint.content}</Typography>
+          </div>
 
-      <div id="content" style={{ width: '100%', textAlign: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Typography variant="body1">Content:</Typography>
-          &nbsp;
-          <Typography variant="caption">{complaint.content}</Typography>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Typography variant="body1">License plate:</Typography>
+            &nbsp;
+            <Typography variant="caption">{complaint.licensePlate}</Typography>
+          </div>
+
+          <div style={{ margin: '32px 0' }}>
+            <Carousel
+              loop
+              cols={2}
+              showDots
+              responsiveLayout={[
+                { breakpoint: 1250, cols: 2, gap: 2 },
+                { breakpoint: 1000, cols: 4, rows: 1, gap: 2 },
+              ]}
+              mobileBreakpoint={600}
+            >
+              {complaint.images.length > 0 &&
+                complaint.images.map((image, index) => (
+                  <Carousel.Item key={image}>
+                    <Image
+                      style={{ height: 400, objectFit: 'cover', textAlign: 'center', borderRadius: '4%' }}
+                      src={`${cdnEndpoint}/${image}`}
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                      width={400}
+                      height={400}
+                      alt="alt"
+                    />
+                  </Carousel.Item>
+                ))}
+            </Carousel>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Typography variant="body1">License plate:</Typography>
-          &nbsp;
-          <Typography variant="caption">{complaint.licensePlate}</Typography>
-        </div>
-
-        <div style={{ margin: '32px 0' }}>
-          <Carousel
-            loop
-            cols={2}
-            showDots
-            responsiveLayout={[
-              { breakpoint: 1250, cols: 2, gap: 2 },
-              { breakpoint: 1000, cols: 4, rows: 1, gap: 2 },
-            ]}
-            mobileBreakpoint={600}
-          >
-            {complaint.images.length > 0 &&
-              complaint.images.map((image, index) => (
-                <Carousel.Item key={image}>
-                  <Image
-                    style={{ height: 400, objectFit: 'cover', textAlign: 'center', borderRadius: '4%' }}
-                    src={`${cdnEndpoint}/${image}`}
-                    loading={index === 0 ? 'eager' : 'lazy'}
-                    // property={index === 0}
-                    width={400}
-                    height={400}
-                    alt="alt"
-                    // placeholder="blur"
-                  />
-                </Carousel.Item>
-              ))}
-          </Carousel>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
-        {complaint.authorId === session?.user?.id && (
-          <Button
-            variant="contained"
-            style={{ marginTop: 36, backgroundColor: 'red' }}
-            onClick={() => deleteComplaint.mutateAsync({ complaintId: complaint.complaintId })}
-          >
-            <DeleteIcon fontSize="small" />
-            Delete
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
+          {complaint.authorId === session?.user?.id && (
+            <Button
+              variant="contained"
+              style={{ marginTop: 36, backgroundColor: 'red' }}
+              onClick={() => deleteComplaint.mutateAsync({ complaintId: complaint.complaintId })}
+            >
+              <DeleteIcon fontSize="small" />
+              Delete
+            </Button>
+          )}
+          <Button component={Link} variant="contained" color="secondary" href="/feed" style={{ marginTop: 36 }}>
+            {`< Back to feed`}
           </Button>
-        )}
-        <Button component={Link} variant="contained" color="secondary" href="/feed" style={{ marginTop: 36 }}>
-          {`< Back to feed`}
-        </Button>
-        <Button component={Link} variant="contained" href="/complaint/create" style={{ marginTop: 36 }}>
-          Create a new complaint
-        </Button>
+          <Button component={Link} variant="contained" href="/complaint/create" style={{ marginTop: 36 }}>
+            Create a new complaint
+          </Button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

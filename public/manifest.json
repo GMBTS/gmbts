@@ -1,9 +1,9 @@
 {
     "theme_color": "#ae7741",
     "background_color": "#2d1600",
-    "display": "browser",
+    "display": "standalone",
     "scope": "/",
-    "start_url": "/",
+    "start_url": "/complaint/create",
     "short_name": "Give me back the sidewalk!",
     "name": "GMBTS",
     "icons": [

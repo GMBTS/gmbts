@@ -1,28 +1,63 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import { Complaint } from '@prisma/client';
+import axios from 'axios';
 import { useMutation } from 'react-query';
 
-import { IFormInput } from '@/types/complaints/create';
+import { CreateComplaintFormData, CreateComplaintPayload } from '@/types/complaints/create';
 
-const useCreateComplaint = () => {
-  return useMutation(async (complaint: IFormInput) => {
-    const formData = new FormData();
+type UrlsResponse = {
+  posts: { fields: { key: string }; url: string }[];
+  complaintId: string;
+};
 
-    complaint.images.forEach(({ file: image, id }) => {
-      formData.append(id, image);
+function useCreateUploadUrl() {
+  return useMutation(async (complaint: CreateComplaintFormData) => {
+    const res = await axios.post<UrlsResponse>('/api/upload-url', {
+      files: complaint.images.map(({ id }) => id),
     });
 
-    formData.append('formData', JSON.stringify({ ...complaint, images: undefined }));
+    return res.data;
+  });
+}
 
-    const config: AxiosRequestConfig = {
-      headers: { 'content-type': 'multipart/form-data' },
-      onUploadProgress: (event) => {
-        if (event.total) {
-          // console.log(`Current progress:`, Math.round((event.loaded * 100) / event.total));
-        }
-      },
+const uploadFiles = async (files: { file: File; id: string }[], posts: { fields: any; url: string }[]) => {
+  return Promise.all(
+    files.map(async ({ file, id }) => {
+      const formData = new FormData();
+      const post = posts.find((p) => p.fields.key.includes(id));
+
+      if (!post) {
+        throw new Error('No post found');
+      }
+
+      Object.entries({ ...post.fields, file }).forEach(([key, value]) => {
+        formData.append(key, value as string);
+      });
+
+      return fetch(post.url, {
+        method: 'POST',
+        body: formData,
+      });
+    }),
+  );
+};
+
+const useCreateComplaint = () => {
+  const { mutateAsync: createUploadUrls } = useCreateUploadUrl();
+
+  return useMutation(async (complaint: CreateComplaintFormData): Promise<Complaint> => {
+    const { posts, complaintId } = await createUploadUrls(complaint);
+    await uploadFiles(complaint.images, posts);
+
+    const payload: CreateComplaintPayload = {
+      ...complaint,
+      complaintId,
+      imageKeys: posts.map(({ fields }) => fields.key),
     };
 
-    return axios.post('/api/complaint/create', formData, config);
+    const returnedValue = await axios.post<Complaint>('/api/complaint/create', payload);
+
+    return returnedValue.data;
   });
 };
+
 export { useCreateComplaint };

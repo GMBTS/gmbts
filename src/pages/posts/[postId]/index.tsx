@@ -11,7 +11,7 @@ type Post = {
 
 const Posts = ({ post }: { post: Post }) => {
   return (
-    <div style={{ height: 'calc(100vh - 56px)' }}>
+    <div style={{ height: 'calc(100vh - 48px)' }}>
       <h1>{post.title}</h1>
     </div>
   );
