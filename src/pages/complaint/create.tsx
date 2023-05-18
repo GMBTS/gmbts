@@ -1,7 +1,8 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import StarIcon from '@mui/icons-material/Star';
-import { FormControlLabel, IconButton, Switch, TextField, Typography } from '@mui/material';
+import { Box, FormControlLabel, IconButton, Switch, TextField, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
+import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
@@ -10,6 +11,7 @@ import { useDropzone } from 'react-dropzone';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import * as uuid from 'uuid';
 
+import Map from '@/client/common/Map';
 import { useCreateComplaint } from '@/client/components/file-upload/hooks/useCreateComplaint';
 import { CreateComplaintFormData, CreateComplaintPayload } from '@/types/complaints/create';
 import { IMAGES_MIME_TYPE, MAX_FILE_UPLOAD_COUNT, MAX_UPLOAD_FILE_SIZE } from '@/utils/constants';
@@ -54,7 +56,7 @@ const NewPost = () => {
     },
     [images, setValue, previewUrls],
   );
-  const { getRootProps, getInputProps } = useDropzone({
+  const { getRootProps, getInputProps, open } = useDropzone({
     onDrop,
     multiple: true,
     accept: { [IMAGES_MIME_TYPE]: [] },
@@ -254,22 +256,28 @@ const NewPost = () => {
 
               <div {...getRootProps({ className: 'my-dropzone', style: { cursor: 'pointer', margin: '24px 0' } })}>
                 <input {...getInputProps({ id: 'images' })} />
-                Drag n drop here
+                Drag 'n' drop here
+                <Box marginTop={1}>OR</Box>
+                <Button type="button" variant="contained" color="primary" sx={{ borderRadius: 0, marginTop: 1 }}>
+                  Browse
+                </Button>
               </div>
             </div>
           </div>
+
+          <Map location={location} />
           <div
             id="footer"
             style={{
               width: '100%',
-              backgroundColor: 'gray',
+              backgroundColor: '#92bcea',
               position: 'sticky',
               bottom: 0,
               display: 'flex',
               justifyContent: 'space-between',
               flexDirection: 'row-reverse',
               alignItems: 'center',
-              height: 56,
+              height: 48,
               borderRadius: 4,
               padding: '8px 16px',
             }}

@@ -1,6 +1,6 @@
 {
-    "theme_color": "#ae7741",
-    "background_color": "#2d1600",
+    "theme_color": "#7A93AC",
+    "background_color": "#7A93AC",
     "display": "standalone",
     "scope": "/",
     "start_url": "/complaint/create",
