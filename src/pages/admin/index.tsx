@@ -26,8 +26,6 @@ export default function AdminPage({
     AuthorComplainets: Complaint[];
   })[];
 }) {
-  console.log(users);
-
   return (
     <div style={{ height: '100vh' }}>
       <Typography variant="h3" style={{ textAlign: 'center' }}>
@@ -37,7 +35,7 @@ export default function AdminPage({
       <Typography variant="h6" sx={{ textAlign: 'center', marginTop: 5 }}>
         Users:
       </Typography>
-      {/* <Divider variant="inset" /> */}
+
       <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 8 }}>
         <div style={{ width: '100%', maxWidth: 560, backgroundColor: '' }}>
           {users.map((user, index) => (

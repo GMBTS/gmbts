@@ -26,9 +26,11 @@ const ViewComplaint: React.FC<{ complaint: Complaint; cdnEndpoint: string }> = (
         <meta property="og:description" content={complaint.content ?? ''} />
         <meta
           property="og:image"
-          content={`/_next/image?url=${encodeURIComponent(`${cdnEndpoint}/${complaint.images[0]}`)}&w=640&q=20`}
+          content={`https://www.gmbts.com/_next/image?url=${encodeURIComponent(
+            `${cdnEndpoint}/${complaint.images[0]}`,
+          )}&w=640&q=20`}
         />
-        <meta property="og:url" content={`complaint/${complaint.complaintId}`} />
+        <meta property="og:url" content={`https://www.gmbts.com/complaint/${complaint.complaintId}`} />
         <meta property="og:type" content="article" />
       </Head>
       <div style={{ height: 'calc(100vh - 48px)', padding: 16 }}>
@@ -90,7 +92,7 @@ const ViewComplaint: React.FC<{ complaint: Complaint; cdnEndpoint: string }> = (
           {complaint.authorId === session?.user?.id && (
             <Button
               variant="contained"
-              style={{ marginTop: 36, backgroundColor: 'red' }}
+              style={{ marginTop: 36, backgroundColor: '#AFB3F7' }}
               onClick={() => deleteComplaint.mutateAsync({ complaintId: complaint.complaintId })}
             >
               <DeleteIcon fontSize="small" />

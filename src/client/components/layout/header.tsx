@@ -6,6 +6,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import Image from 'next/image';
 import Link from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
 import * as React from 'react';
@@ -31,7 +32,13 @@ export default function Navbar() {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar variant="dense">
-          <Typography variant="body1" component={Link} href="/" sx={{ flexGrow: 1 }}>
+          <Typography
+            variant="body1"
+            component={Link}
+            href="/feed"
+            sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}
+          >
+            <Image src="/icon-512x512.png" alt="website icon" width={48} height={48} />
             GMBTS
           </Typography>
 

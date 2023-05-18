@@ -6,7 +6,9 @@ export default function Document() {
       <Head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon.png" />
-        <meta name="theme-color" content="#FF0000" />
+        <meta name="theme-color" content="#7A93AC" />
+        <meta property="og:site_name" content="GMBTS" />
+        <meta property="og:fb:app_id" content="255587800325067" />
       </Head>
 
       <body>

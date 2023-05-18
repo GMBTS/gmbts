@@ -20,10 +20,10 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
       createTheme({
         palette: {
           primary: {
-            main: '#e93c0c',
+            main: '#171A21',
           },
           secondary: {
-            main: '#8694bd',
+            main: '#afb3f7',
           },
           mode: prefersDarkMode ? 'dark' : 'light',
         },

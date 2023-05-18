@@ -48,13 +48,18 @@ const Ad = () => {
           <Typography variant="body2">Developer? Designer? Have an idea? We want to hear from you!</Typography>
         </CardContent>
         <CardActions>
-          <Button size="small" href="mailto:avner.gmbts@gmail.com?subject=I want to help!" rel="noopener noreferrer">
+          <Button
+            size="small"
+            href="mailto:avner.gmbts@gmail.com?subject=I want to help!"
+            rel="noopener noreferrer"
+            color="secondary"
+          >
             Email Us
           </Button>
-          <Button size="small" href="https://blog.gmbts.com" target="_blank">
+          <Button size="small" href="https://blog.gmbts.com" target="_blank" color="secondary">
             Learn More
           </Button>
-          <Button size="small" href="https://github.com/GMBTS/gmbts" target="_blank">
+          <Button size="small" href="https://github.com/GMBTS/gmbts" target="_blank" color="secondary">
             See Code
           </Button>
         </CardActions>
@@ -161,6 +166,11 @@ const Feed: React.FC<{
     <>
       <Head>
         <title>Sidewalk complaints feed</title>
+        <meta name="description" content="Sidewalk complaints feed" />
+        <meta property="og:title" content="Sidewalk complaints feed" />
+        <meta property="og:description" content="GMBTS report when and where your sidewalk is take from you" />
+        <meta property="og:image" content="https://gmbts.com/icon-256x256.png" />
+        <meta property="og:type" content="article" />
       </Head>
       <div>
         <Typography style={{ textAlign: 'center' }} variant="h2">
@@ -173,7 +183,7 @@ const Feed: React.FC<{
             alignItems: 'center',
             flexDirection: 'column',
             gap: 20,
-            marginBottom: 36,
+            paddingBottom: 64,
           }}
         >
           {complaints.map((complaint, complaintIndex) => (
@@ -188,7 +198,7 @@ const Feed: React.FC<{
           style={{
             position: 'fixed',
             bottom: 0,
-            backgroundColor: 'gray',
+            backgroundColor: '#92bcea',
             width: '100%',
             padding: 8,
             borderRadius: '2%',
