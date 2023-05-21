@@ -33,10 +33,7 @@ const uploadFiles = async (files: { file: File; id: string }[], posts: { fields:
         formData.append(key, value as string);
       });
 
-      return fetch(post.url, {
-        method: 'POST',
-        body: formData,
-      });
+      return axios.post(post.url, formData);
     }),
   );
 };
@@ -52,6 +49,13 @@ const useCreateComplaint = () => {
       ...complaint,
       complaintId,
       imageKeys: posts.map(({ fields }) => fields.key),
+      location: complaint.location
+        ? {
+            latitude: complaint.location.latitude,
+            longitude: complaint.location.longitude,
+            accuracy: complaint.location.accuracy,
+          }
+        : undefined,
     };
 
     const returnedValue = await axios.post<Complaint>('/api/complaint/create', payload);

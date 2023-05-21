@@ -3,8 +3,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import * as uuid from 'uuid';
 
-import { CreateComplaintPayload } from '@/types/complaints/create';
-
 import { authOptions } from './auth/[...nextauth]';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -14,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   const session = await getServerSession(req, res, authOptions);
 
-  if (!session?.user?.id || session?.user?.email !== process.env.SUPPER_DUPER_ADMIN_EMAIL) {
+  if (!session?.user?.id) {
     res.status(401).send('Unauthorized');
     return;
   }
@@ -38,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         Expires: 60 * 3,
         Conditions: [
-          ['content-length-range', 0, 1048576 * 5], // up to 5 MB
+          ['content-length-range', 0, 1048576 * 30], // up to 50 MB - due to issue with camera roll image being too big. Im increasing the limit to 30MB
         ],
       });
     }),

@@ -30,6 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       authorId: session.user.id,
       featuredImage: formData.featuredImage,
       images: formData.imageKeys,
+      location: JSON.stringify(formData.location),
     },
   });
 

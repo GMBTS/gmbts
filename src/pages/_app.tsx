@@ -17,17 +17,31 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
 
   const theme = useMemo(
     () =>
-      createTheme({
-        palette: {
-          primary: {
-            main: '#171A21',
-          },
-          secondary: {
-            main: '#afb3f7',
-          },
-          mode: prefersDarkMode ? 'dark' : 'light',
-        },
-      }),
+      createTheme(
+        prefersDarkMode
+          ? {
+              palette: {
+                primary: {
+                  main: '#92BCEA',
+                },
+                secondary: {
+                  main: '#AFB3F7',
+                },
+                mode: 'dark',
+              },
+            }
+          : {
+              palette: {
+                primary: {
+                  main: '#171A21',
+                },
+                secondary: {
+                  main: '#afb3f7',
+                },
+                mode: 'light',
+              },
+            },
+      ),
     [prefersDarkMode],
   );
 

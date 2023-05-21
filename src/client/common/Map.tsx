@@ -1,16 +1,18 @@
 import { Circle, GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 
-const mapContainerStyle = {
-  height: '400px',
-  width: '800px',
+import { CreateComplaintFormData } from '@/types/complaints/create';
+
+const defaultLocation = {
+  latitude: 31.7683,
+  longitude: 35.2137,
 };
-export default function MyComponent({ location }: { location: GeolocationCoordinates | undefined }) {
-  const [lat] = useState(31.7580715);
-  const [lng] = useState(35.2119557);
-  // Add lat, lng as dependencies
-  const mapCenter = useMemo(() => ({ lat: lat, lng: lng }), [lat, lng]);
 
+export type MapProps = {
+  location?: CreateComplaintFormData['location'];
+};
+
+export default function Map({ location }: MapProps) {
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: 'AIzaSyDGhGk3DTCkjF1EUxpMm5ypFoQ-ecrS2gY',
   });
@@ -19,7 +21,7 @@ export default function MyComponent({ location }: { location: GeolocationCoordin
     () => ({
       disableDefaultUI: true,
       clickableIcons: true,
-      scrollwheel: false,
+      // scrollwheel: false, // look into this
     }),
     [],
   );
@@ -32,8 +34,11 @@ export default function MyComponent({ location }: { location: GeolocationCoordin
     <div>
       <GoogleMap
         options={mapOptions}
-        zoom={18}
-        center={mapCenter}
+        zoom={location ? 18 : 10}
+        center={{
+          lat: location?.latitude || defaultLocation.latitude,
+          lng: location?.longitude || defaultLocation.longitude,
+        }}
         mapContainerStyle={{ width: '100%', height: '500px' }}
       >
         {location && (

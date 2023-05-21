@@ -12,6 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Account, Complaint, User } from '@prisma/client';
+import dayjs from 'dayjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
@@ -49,7 +50,7 @@ export default function AdminPage({
                   secondary={
                     <>
                       <Typography sx={{ display: 'inline' }} component="span" variant="caption" color="text.secondary">
-                        ID:{` ${user.id}`}
+                        ID:{` ${user.id}`}, CreatedAt: {dayjs(user.createdAt).format('MMMM DD, YYYY HH:mm')}
                       </Typography>
                       <Typography
                         sx={{ display: 'inline', marginLeft: 1 }}

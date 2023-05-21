@@ -90,20 +90,27 @@ const ViewComplaint: React.FC<{ complaint: Complaint; cdnEndpoint: string }> = (
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
           {complaint.authorId === session?.user?.id && (
-            <Button
-              variant="contained"
-              style={{ marginTop: 36, backgroundColor: '#AFB3F7' }}
-              onClick={() => deleteComplaint.mutateAsync({ complaintId: complaint.complaintId })}
-            >
-              <DeleteIcon fontSize="small" />
-              Delete
-            </Button>
+            <>
+              <Button
+                component={Link}
+                variant="contained"
+                href={`/complaint/${complaint.complaintId}/edit`}
+                style={{ marginTop: 36 }}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="contained"
+                style={{ marginTop: 36, backgroundColor: '#AFB3F7' }}
+                onClick={() => deleteComplaint.mutateAsync({ complaintId: complaint.complaintId })}
+              >
+                <DeleteIcon fontSize="small" />
+                Delete
+              </Button>
+            </>
           )}
           <Button component={Link} variant="contained" color="secondary" href="/feed" style={{ marginTop: 36 }}>
             {`< Back to feed`}
-          </Button>
-          <Button component={Link} variant="contained" href="/complaint/create" style={{ marginTop: 36 }}>
-            Create a new complaint
           </Button>
         </div>
       </div>
