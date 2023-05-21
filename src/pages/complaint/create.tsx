@@ -2,7 +2,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import StarIcon from '@mui/icons-material/Star';
 import { Box, FormControlLabel, IconButton, Switch, TextField, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
-import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
@@ -13,7 +12,7 @@ import * as uuid from 'uuid';
 
 import Map from '@/client/common/Map';
 import { useCreateComplaint } from '@/client/components/file-upload/hooks/useCreateComplaint';
-import { CreateComplaintFormData, CreateComplaintPayload } from '@/types/complaints/create';
+import { CreateComplaintFormData } from '@/types/complaints/create';
 import { IMAGES_MIME_TYPE, MAX_FILE_UPLOAD_COUNT, MAX_UPLOAD_FILE_SIZE } from '@/utils/constants';
 
 const options = {
@@ -22,7 +21,7 @@ const options = {
   maximumAge: 0,
 };
 
-const NewPost = () => {
+const CreateComplaintForm = () => {
   const {
     control,
     register,
@@ -33,9 +32,8 @@ const NewPost = () => {
     watch,
     formState: { errors },
   } = useForm<CreateComplaintFormData>();
-  const { mutateAsync: createComplaint, isError, isLoading, data } = useCreateComplaint();
+  const { mutateAsync: createComplaint, isError, isLoading } = useCreateComplaint();
   const [success, setSuccess] = useState(false);
-  const [location, setLocation] = useState<GeolocationCoordinates>();
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
   register('images', { required: true, value: [] });
@@ -46,6 +44,7 @@ const NewPost = () => {
 
   const images = watch('images');
   const featuredImage = watch('featuredImage');
+  const location = watch('location');
 
   const onDrop = useCallback(
     (droppedFiles: File[]) => {
@@ -76,14 +75,13 @@ const NewPost = () => {
     (pos: GeolocationPosition) => {
       const crd = pos.coords;
 
-      // console.log('Your current position is:');
-      // console.log(`Latitude : ${crd.latitude}`);
-      // console.log(`Longitude: ${crd.longitude}`);
-      // console.log(`More or less ${crd.accuracy} meters.`);
+      setValue('location', crd);
 
-      setLocation(crd);
+      if (crd.accuracy > 50) {
+        console.log('retrying');
 
-      setValue('location', JSON.stringify(crd));
+        navigator?.geolocation.getCurrentPosition(onSuccessLocation, error, options);
+      }
     },
     [setValue],
   );
@@ -112,10 +110,10 @@ const NewPost = () => {
   }
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && location === undefined) {
       navigator?.geolocation.getCurrentPosition(onSuccessLocation, error, options);
     }
-  }, [onSuccessLocation]);
+  }, [onSuccessLocation, location]);
 
   useEffect(() => {
     return () => previewUrls.forEach((previewUrl) => URL.revokeObjectURL(previewUrl));
@@ -123,187 +121,195 @@ const NewPost = () => {
   }, []);
 
   return (
+    <div>
+      <div style={{ textAlign: 'center', marginTop: 36 }}>
+        <Typography variant="h4">Create a complaint</Typography>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: '75%',
+            maxWidth: '600px',
+            justifyContent: 'center',
+            margin: 'auto',
+            marginTop: '10%',
+            paddingBottom: '10%',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <TextField
+              {...register('title', { required: 'This field is required' })}
+              label="Title"
+              variant="standard"
+              error={!!errors.title}
+              helperText={errors?.title?.message}
+              style={{ marginBottom: 24 }}
+            />
+            <TextField
+              {...register('licensePlate', { required: 'This field is required' })}
+              variant="standard"
+              label="License Plate"
+              type="number"
+              error={!!errors.licensePlate}
+              helperText={errors?.licensePlate?.message}
+              style={{ marginBottom: 24 }}
+              InputProps={{
+                placeholder: '77-777-77',
+              }}
+            />
+            <TextField
+              {...register('content', { required: 'This field is required' })}
+              type="text"
+              variant="standard"
+              label="Description"
+              multiline
+              rows={2}
+              error={!!errors.content}
+              helperText={errors?.content?.message}
+              style={{ marginBottom: 24 }}
+            />
+
+            <FormControlLabel
+              control={
+                <Controller
+                  render={({ field }) => {
+                    return <Switch {...field} />;
+                  }}
+                  name="isAnonymous"
+                  defaultValue={false}
+                  control={control}
+                />
+              }
+              label="Stay anonymous"
+            />
+
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              {images &&
+                images.length > 0 &&
+                images.map((image, index) => (
+                  <div key={`${image.id}`} style={{ display: 'flex', alignItems: 'center', margin: '16px 0' }}>
+                    <div style={{ position: 'relative' }}>
+                      <img
+                        src={previewUrls[index]}
+                        style={{
+                          maxWidth: '100%',
+                          maxHeight: 450,
+                          objectFit: 'contain',
+                          borderRadius: '5%',
+                        }}
+                      />
+
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          right: 0,
+                          marginRight: -20,
+                          marginTop: -20,
+                          backgroundColor: 'coral',
+                          borderRadius: '50%',
+                          opacity: 0.9,
+                        }}
+                      >
+                        <IconButton onClick={() => removeImage(index)} aria-label="delete" style={{ opacity: 1 }}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </div>
+
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: 0,
+                          right: 0,
+                          backgroundColor: '#cdc0c0',
+                          borderRadius: '50%',
+                          marginBottom: -20,
+                          marginRight: -20,
+                        }}
+                      >
+                        <IconButton
+                          onClick={() => updateFeaturedImage(index)}
+                          aria-label="delete"
+                          style={{ opacity: 1 }}
+                        >
+                          <StarIcon
+                            style={{
+                              color: featuredImage === image.id || (!featuredImage && index === 0) ? 'yellow' : 'gray',
+                            }}
+                          />
+                        </IconButton>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            <div {...getRootProps({ className: 'my-dropzone', style: { cursor: 'pointer', margin: '24px 0' } })}>
+              <input {...getInputProps({ id: 'images' })} />
+              Drag 'n' drop here
+              <Box marginTop={1}>OR</Box>
+              <Button type="button" variant="contained" color="primary" sx={{ borderRadius: 0, marginTop: 1 }}>
+                Browse
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <Map location={location} />
+        <div
+          id="footer"
+          style={{
+            width: '100%',
+            backgroundColor: '#92bcea',
+            position: 'sticky',
+            bottom: 0,
+            display: 'flex',
+            justifyContent: 'space-between',
+            flexDirection: 'row-reverse',
+            alignItems: 'center',
+            height: 48,
+            borderRadius: 4,
+            padding: '8px 16px',
+          }}
+        >
+          <div>
+            <Button disabled={isLoading} variant="contained" type="submit">
+              Submit
+            </Button>
+          </div>
+
+          {isLoading && <div>Uploading</div>}
+
+          <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', gap: '20px' }}>
+            {success && <Typography color="success">Success!</Typography>}
+            {isError && <div>Error</div>}
+          </div>
+
+          <Button component={Link} variant="contained" color="secondary" href="/feed">
+            {`< Back to feed`}
+          </Button>
+        </div>
+      </form>
+      <div />
+    </div>
+  );
+};
+
+const CreateComplaintPage = () => {
+  return (
     <>
       <Head>
         <title>GMBTS | Complaints - Create</title>
       </Head>
+
       <div style={{ height: 'calc(100vh - 48px)', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ textAlign: 'center', marginTop: 36 }}>
-          <Typography variant="h4">Create a complaint</Typography>
-        </div>
-
-        <form onSubmit={handleSubmit(onSubmit)} style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              width: '75%',
-              maxWidth: '600px',
-              justifyContent: 'center',
-              margin: 'auto',
-              marginTop: '10%',
-              paddingBottom: '10%',
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <TextField
-                {...register('title', { required: 'This field is required' })}
-                label="Title"
-                variant="standard"
-                error={!!errors.title}
-                helperText={errors?.title?.message}
-                style={{ marginBottom: 24 }}
-              />
-              <TextField
-                {...register('licensePlate', { required: 'This field is required' })}
-                variant="standard"
-                label="License Plate"
-                type="number"
-                error={!!errors.licensePlate}
-                helperText={errors?.licensePlate?.message}
-                style={{ marginBottom: 24 }}
-                InputProps={{
-                  placeholder: '77-777-77',
-                }}
-              />
-              <TextField
-                {...register('content', { required: 'This field is required' })}
-                type="text"
-                variant="standard"
-                label="Description"
-                multiline
-                rows={2}
-                error={!!errors.content}
-                helperText={errors?.content?.message}
-                style={{ marginBottom: 24 }}
-              />
-
-              <FormControlLabel
-                control={
-                  <Controller
-                    render={({ field }) => {
-                      return <Switch {...field} />;
-                    }}
-                    name="isAnonymous"
-                    defaultValue={false}
-                    control={control}
-                  />
-                }
-                label="Stay anonymous"
-              />
-
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                {images &&
-                  images.length > 0 &&
-                  images.map((image, index) => (
-                    <div key={`${image.id}`} style={{ display: 'flex', alignItems: 'center', margin: '16px 0' }}>
-                      <div style={{ position: 'relative' }}>
-                        <img
-                          src={previewUrls[index]}
-                          style={{
-                            maxWidth: '100%',
-                            maxHeight: 450,
-                            objectFit: 'contain',
-                            borderRadius: '5%',
-                          }}
-                        />
-
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            right: 0,
-                            marginRight: -20,
-                            marginTop: -20,
-                            backgroundColor: 'coral',
-                            borderRadius: '50%',
-                            opacity: 0.9,
-                          }}
-                        >
-                          <IconButton onClick={() => removeImage(index)} aria-label="delete" style={{ opacity: 1 }}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </div>
-
-                        <div
-                          style={{
-                            position: 'absolute',
-                            bottom: 0,
-                            right: 0,
-                            backgroundColor: '#cdc0c0',
-                            borderRadius: '50%',
-                            marginBottom: -20,
-                            marginRight: -20,
-                          }}
-                        >
-                          <IconButton
-                            onClick={() => updateFeaturedImage(index)}
-                            aria-label="delete"
-                            style={{ opacity: 1 }}
-                          >
-                            <StarIcon
-                              style={{
-                                color:
-                                  featuredImage === image.id || (!featuredImage && index === 0) ? 'yellow' : 'gray',
-                              }}
-                            />
-                          </IconButton>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-
-              <div {...getRootProps({ className: 'my-dropzone', style: { cursor: 'pointer', margin: '24px 0' } })}>
-                <input {...getInputProps({ id: 'images' })} />
-                Drag 'n' drop here
-                <Box marginTop={1}>OR</Box>
-                <Button type="button" variant="contained" color="primary" sx={{ borderRadius: 0, marginTop: 1 }}>
-                  Browse
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <Map location={location} />
-          <div
-            id="footer"
-            style={{
-              width: '100%',
-              backgroundColor: '#92bcea',
-              position: 'sticky',
-              bottom: 0,
-              display: 'flex',
-              justifyContent: 'space-between',
-              flexDirection: 'row-reverse',
-              alignItems: 'center',
-              height: 48,
-              borderRadius: 4,
-              padding: '8px 16px',
-            }}
-          >
-            <div>
-              <Button disabled={isLoading} variant="contained" type="submit">
-                Submit
-              </Button>
-            </div>
-
-            {isLoading && <div>Uploading</div>}
-
-            <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', gap: '20px' }}>
-              {success && <Typography color="success">Success!</Typography>}
-              {isError && <div>Error</div>}
-            </div>
-
-            <Button component={Link} variant="contained" color="secondary" href="/feed">
-              {`< Back to feed`}
-            </Button>
-          </div>
-        </form>
-        <div />
+        <CreateComplaintForm />
       </div>
     </>
   );
 };
 
-export default NewPost;
+export default CreateComplaintPage;

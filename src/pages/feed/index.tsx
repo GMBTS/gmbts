@@ -79,7 +79,7 @@ const FeedImage: React.FC<{ url: string; id: string; lazy: boolean; cdnEndpoint:
       style={{
         position: 'relative',
         maxWidth: 700,
-        aspectRatio: '16/9',
+        aspectRatio: '16/9', // todo change area to origin image aspect ratio
         maxHeight: 500,
       }}
     >
@@ -165,7 +165,7 @@ const Feed: React.FC<{
   return (
     <>
       <Head>
-        <title>Sidewalk complaints feed</title>
+        <title>GMBTS | Sidewalk complaints feed</title>
         <meta name="description" content="Sidewalk complaints feed" />
         <meta property="og:title" content="Sidewalk complaints feed" />
         <meta property="og:description" content="GMBTS report when and where your sidewalk is take from you" />
