@@ -16,6 +16,9 @@ import { prisma } from '@/db/prisma';
 const ViewComplaint: React.FC<{ complaint: Complaint; cdnEndpoint: string }> = ({ complaint, cdnEndpoint }) => {
   const { data: session } = useSession();
   const deleteComplaint = useDeleteComplaint();
+  const shareImage = `https://www.gmbts.com/_next/image?url=${encodeURIComponent(
+    `${cdnEndpoint}/${complaint.images[0]}`,
+  )}`;
 
   return (
     <>
@@ -24,14 +27,13 @@ const ViewComplaint: React.FC<{ complaint: Complaint; cdnEndpoint: string }> = (
         <meta property="og:title" content={complaint.title} />
         <meta name="description" content={complaint.content ?? ''} key="desc" />
         <meta property="og:description" content={complaint.content ?? ''} />
-        <meta
-          property="og:image"
-          content={`https://www.gmbts.com/_next/image?url=${encodeURIComponent(
-            `${cdnEndpoint}/${complaint.images[0]}`,
-          )}&w=640&q=20`}
-        />
+        <meta property="og:image" content={`${shareImage}&w=640&q=20`} />
         <meta property="og:url" content={`https://www.gmbts.com/complaint/${complaint.complaintId}`} />
         <meta property="og:type" content="article" />
+
+        <meta property="twitter:image" content={`${shareImage}&w=640&q=45`} />
+        <meta property="twitter:title" content={complaint.title} />
+        <meta property="twitter:description" content="Twitter link preview description" />
       </Head>
       <div style={{ height: 'calc(100vh - 48px)', padding: 16 }}>
         <div style={{ display: 'flex', flexDirection: 'column' }} />

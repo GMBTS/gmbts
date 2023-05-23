@@ -1,3 +1,4 @@
+import MapIcon from '@mui/icons-material/Map';
 import MoodBadIcon from '@mui/icons-material/MoodBad';
 import {
   Button,
@@ -16,7 +17,7 @@ import dayjs from 'dayjs';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { prisma } from '@/db/prisma';
 
@@ -83,7 +84,7 @@ const FeedImage: React.FC<{ url: string; id: string; lazy: boolean; cdnEndpoint:
         maxHeight: 500,
       }}
     >
-      <Link href={`/complaint/${id}`}>
+      <Link href={`/complaint/${id}`} style={{ position: 'relative', height: '100%', width: '100%', display: 'block' }}>
         <Image
           style={{ objectFit: 'cover' }}
           src={`${cdnEndpoint}/${url}`}
@@ -91,6 +92,7 @@ const FeedImage: React.FC<{ url: string; id: string; lazy: boolean; cdnEndpoint:
           alt={`feed image ${id}`}
           fill
           sizes="(max-width: 700px) 100vw, 700px"
+          priority={!lazy}
         />
       </Link>
     </div>
@@ -108,6 +110,11 @@ const FeedItem = ({
   complaintIndex: number;
   cdnEndpoint: string;
 }) => {
+  const location = useMemo<{ latitude: number; longitude: number } | undefined>(
+    () => (complaint?.location ? JSON.parse(complaint?.location) : undefined),
+    [complaint?.location],
+  );
+
   return (
     <div
       style={{
@@ -149,7 +156,15 @@ const FeedItem = ({
         </CardContent>
         <Divider />
         <CardActions disableSpacing style={{ flexDirection: 'row-reverse' }}>
-          <IconButton aria-label="add to favorites">
+          <IconButton
+            aria-label="go-to-map"
+            LinkComponent="a"
+            href={`http://www.google.com/maps/place/${location?.latitude},${location?.longitude}`}
+            target="_blank"
+          >
+            <MapIcon />
+          </IconButton>
+          <IconButton aria-label="get-angry">
             <MoodBadIcon />
           </IconButton>
         </CardActions>
@@ -170,7 +185,12 @@ const Feed: React.FC<{
         <meta property="og:title" content="Sidewalk complaints feed" />
         <meta property="og:description" content="GMBTS report when and where your sidewalk is take from you" />
         <meta property="og:image" content="https://gmbts.com/icon-256x256.png" />
+        <meta property="og:url" content="https://gmbts.com/feed" />
         <meta property="og:type" content="article" />
+
+        <meta property="twitter:image" content="https://gmbts.com/icon-512x512.png" />
+        <meta property="twitter:title" content="Sidewalk complaints feed" />
+        <meta property="twitter:description" content="GMBTS report when and where your sidewalk is take from you" />
       </Head>
       <div>
         <Typography style={{ textAlign: 'center' }} variant="h2">

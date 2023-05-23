@@ -13,7 +13,7 @@ const defaultLocation: google.maps.LatLngLiteral = {
 const MapWithHeatmap: React.FC<{ locations: { location: string }[] }> = ({ locations }) => {
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: 'AIzaSyDGhGk3DTCkjF1EUxpMm5ypFoQ-ecrS2gY',
-    libraries: ['visualization'],
+    libraries: ['places', 'visualization'],
   });
 
   const parseLocations = useMemo(() => {
@@ -51,7 +51,12 @@ const HeatMap: React.FC<{ locations: { location: string }[] }> = ({ locations })
         <meta property="og:title" content="GMBTS | HeatMap" />
         <meta property="og:description" content="HeatMap parking violation heatmap" />
         <meta property="og:image" content="https://gmbts.com/icon-256x256.png" />
+        <meta property="og:url" content="https://gmbts.com/heatmap" />
         <meta property="og:type" content="article" />
+
+        <meta property="twitter:image" content="https://gmbts.com/icon-512x512.png" />
+        <meta property="twitter:title" content="GMBTS | HeatMap" />
+        <meta property="twitter:description" content="HeatMap parking violation heatmap" />
       </Head>
       <div style={{ height: 'calc(100vh - 48px)' }}>
         <Typography variant="h4" sx={{ textAlign: 'center' }}>

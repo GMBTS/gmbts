@@ -4,58 +4,42 @@ import { Box, FormControlLabel, IconButton, Switch, TextField, Typography } from
 import Button from '@mui/material/Button';
 import Head from 'next/head';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
 import React from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { Controller, FormProvider, SubmitHandler, useForm, useFormContext } from 'react-hook-form';
 import * as uuid from 'uuid';
 
-import Map from '@/client/common/Map';
+import FormLocation from '@/client/components/complaint/create/FormLocation';
 import { useCreateComplaint } from '@/client/components/file-upload/hooks/useCreateComplaint';
-import { CreateComplaintFormData } from '@/types/complaints/create';
+import { CreateComplaintFormData, FormGeolocationCoordinates } from '@/types/complaints/create';
 import { IMAGES_MIME_TYPE, MAX_FILE_UPLOAD_COUNT, MAX_UPLOAD_FILE_SIZE } from '@/utils/constants';
 
-const options = {
-  enableHighAccuracy: true,
-  timeout: 5000,
-  maximumAge: 0,
-};
+const FormFileUpload: React.FC = () => {
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]); //todo move this to form state?
+  const { register, unregister, setValue, watch } = useFormContext<CreateComplaintFormData>();
 
-const CreateComplaintForm = () => {
-  const {
-    control,
-    register,
-    handleSubmit,
-    setValue,
-    unregister,
-    reset,
-    watch,
-    formState: { errors },
-  } = useForm<CreateComplaintFormData>();
-  const { mutateAsync: createComplaint, isError, isLoading } = useCreateComplaint();
-  const [success, setSuccess] = useState(false);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-
-  register('images', { required: true, value: [] });
-  register('location');
   register('featuredImage');
+  register('images', { required: true, value: [] });
 
   useEffect(() => () => unregister('images'), [unregister]);
 
-  const images = watch('images');
   const featuredImage = watch('featuredImage');
-  const location = watch('location');
+  const images = watch('images');
 
   const onDrop = useCallback(
     (droppedFiles: File[]) => {
       if (images.length + droppedFiles.length > MAX_FILE_UPLOAD_COUNT) return;
 
+      console.log('images', droppedFiles, images);
       setValue('images', [...images, ...droppedFiles.map((file) => ({ file, id: uuid.v4() }))]);
       setPreviewUrls([...previewUrls, ...droppedFiles.map((file) => URL.createObjectURL(file))]);
     },
     [images, setValue, previewUrls],
   );
-  const { getRootProps, getInputProps, open } = useDropzone({
+
+  const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     multiple: true,
     accept: { [IMAGES_MIME_TYPE]: [] },
@@ -63,32 +47,6 @@ const CreateComplaintForm = () => {
     useFsAccessApi: false,
     maxFiles: MAX_FILE_UPLOAD_COUNT,
   });
-
-  const onSubmit: SubmitHandler<CreateComplaintFormData> = async (data) => {
-    setSuccess(false);
-    await createComplaint(data);
-    reset();
-    setSuccess(true);
-  };
-
-  const onSuccessLocation = useCallback(
-    (pos: GeolocationPosition) => {
-      const crd = pos.coords;
-
-      setValue('location', crd);
-
-      if (crd.accuracy > 50) {
-        console.log('retrying');
-
-        navigator?.geolocation.getCurrentPosition(onSuccessLocation, error, options);
-      }
-    },
-    [setValue],
-  );
-
-  function error(err: GeolocationPositionError) {
-    console.warn(`ERROR(${err.code}): ${err.message}`);
-  }
 
   function removeImage(index: number): void {
     if (images[index] === undefined) return;
@@ -110,195 +68,232 @@ const CreateComplaintForm = () => {
   }
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && location === undefined) {
-      navigator?.geolocation.getCurrentPosition(onSuccessLocation, error, options);
-    }
-  }, [onSuccessLocation, location]);
-
-  useEffect(() => {
     return () => previewUrls.forEach((previewUrl) => URL.revokeObjectURL(previewUrl));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div>
+      <div>FormFileUpload</div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        {images &&
+          images.length > 0 &&
+          images.map((image, index) => (
+            <div key={`${image.id}`} style={{ display: 'flex', alignItems: 'center', margin: '16px 0' }}>
+              <div style={{ position: 'relative' }}>
+                <img
+                  src={previewUrls[index]}
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: 450,
+                    objectFit: 'contain',
+                    borderRadius: '5%',
+                  }}
+                />
+
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    marginRight: -20,
+                    marginTop: -20,
+                    backgroundColor: 'coral',
+                    borderRadius: '50%',
+                    opacity: 0.9,
+                  }}
+                >
+                  <IconButton onClick={() => removeImage(index)} aria-label="delete" style={{ opacity: 1 }}>
+                    <DeleteIcon />
+                  </IconButton>
+                </div>
+
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    backgroundColor: '#cdc0c0',
+                    borderRadius: '50%',
+                    marginBottom: -20,
+                    marginRight: -20,
+                  }}
+                >
+                  <IconButton onClick={() => updateFeaturedImage(index)} aria-label="delete" style={{ opacity: 1 }}>
+                    <StarIcon
+                      style={{
+                        color: featuredImage === image.id || (!featuredImage && index === 0) ? 'yellow' : 'gray',
+                      }}
+                    />
+                  </IconButton>
+                </div>
+              </div>
+            </div>
+          ))}
+      </div>
+
+      <div {...getRootProps({ className: 'my-dropzone', style: { cursor: 'pointer', margin: '16px 0' } })}>
+        <input {...getInputProps({ id: 'images' })} />
+        Drag 'n' drop here
+        <Box marginTop={1}>OR</Box>
+        <Button type="button" variant="contained" color="primary" sx={{ borderRadius: 0, marginTop: 1 }}>
+          Browse
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const CreateComplaintForm = () => {
+  const methods = useForm<CreateComplaintFormData>();
+  const { mutateAsync: createComplaint, isError, isLoading } = useCreateComplaint();
+  const [success, setSuccess] = useState(false);
+
+  const onSubmit: SubmitHandler<CreateComplaintFormData> = async (data) => {
+    setSuccess(false);
+    await createComplaint(data);
+    methods.reset();
+    setSuccess(true);
+  };
+
+  const setLocation = useCallback(
+    (coords: FormGeolocationCoordinates) => {
+      methods.setValue('location', coords);
+    },
+    [methods],
+  );
+
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ textAlign: 'center', marginTop: 36 }}>
         <Typography variant="h4">Create a complaint</Typography>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            width: '75%',
-            maxWidth: '600px',
-            justifyContent: 'center',
-            margin: 'auto',
-            marginTop: '10%',
-            paddingBottom: '10%',
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <TextField
-              {...register('title', { required: 'This field is required' })}
-              label="Title"
-              variant="standard"
-              error={!!errors.title}
-              helperText={errors?.title?.message}
-              style={{ marginBottom: 24 }}
-            />
-            <TextField
-              {...register('licensePlate', { required: 'This field is required' })}
-              variant="standard"
-              label="License Plate"
-              type="number"
-              error={!!errors.licensePlate}
-              helperText={errors?.licensePlate?.message}
-              style={{ marginBottom: 24 }}
-              InputProps={{
-                placeholder: '77-777-77',
-              }}
-            />
-            <TextField
-              {...register('content', { required: 'This field is required' })}
-              type="text"
-              variant="standard"
-              label="Description"
-              multiline
-              rows={2}
-              error={!!errors.content}
-              helperText={errors?.content?.message}
-              style={{ marginBottom: 24 }}
-            />
+      <FormProvider {...methods}>
+        <form onSubmit={methods.handleSubmit(onSubmit)} style={{ flex: 1, display: 'grid' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              width: '75%',
+              maxWidth: '600px',
+              justifyContent: 'center',
+              margin: '0 auto',
+              marginBottom: '1%',
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <TextField
+                {...methods.register('title', { required: 'This field is required' })}
+                label="Title"
+                variant="standard"
+                error={!!methods.formState.errors.title}
+                helperText={methods.formState.errors?.title?.message}
+                style={{ marginBottom: 24 }}
+              />
+              <TextField
+                {...methods.register('licensePlate', { required: 'This field is required' })}
+                variant="standard"
+                label="License Plate"
+                type="number"
+                error={!!methods.formState.errors.licensePlate}
+                helperText={methods.formState.errors?.licensePlate?.message}
+                style={{ marginBottom: 24 }}
+                InputProps={{
+                  placeholder: '77-777-77',
+                }}
+              />
+              <TextField
+                {...methods.register('content', { required: 'This field is required' })}
+                type="text"
+                variant="standard"
+                label="Description"
+                multiline
+                rows={2}
+                error={!!methods.formState.errors.content}
+                helperText={methods.formState.errors?.content?.message}
+                style={{ marginBottom: 24 }}
+              />
 
-            <FormControlLabel
-              control={
-                <Controller
-                  render={({ field }) => {
-                    return <Switch {...field} />;
-                  }}
-                  name="isAnonymous"
-                  defaultValue={false}
-                  control={control}
-                />
-              }
-              label="Stay anonymous"
-            />
+              <FormControlLabel
+                control={
+                  <Controller
+                    render={({ field }) => {
+                      return <Switch {...field} />;
+                    }}
+                    name="isAnonymous"
+                    defaultValue={false}
+                    control={methods.control}
+                  />
+                }
+                label="Stay anonymous"
+              />
 
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              {images &&
-                images.length > 0 &&
-                images.map((image, index) => (
-                  <div key={`${image.id}`} style={{ display: 'flex', alignItems: 'center', margin: '16px 0' }}>
-                    <div style={{ position: 'relative' }}>
-                      <img
-                        src={previewUrls[index]}
-                        style={{
-                          maxWidth: '100%',
-                          maxHeight: 450,
-                          objectFit: 'contain',
-                          borderRadius: '5%',
-                        }}
-                      />
-
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          right: 0,
-                          marginRight: -20,
-                          marginTop: -20,
-                          backgroundColor: 'coral',
-                          borderRadius: '50%',
-                          opacity: 0.9,
-                        }}
-                      >
-                        <IconButton onClick={() => removeImage(index)} aria-label="delete" style={{ opacity: 1 }}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </div>
-
-                      <div
-                        style={{
-                          position: 'absolute',
-                          bottom: 0,
-                          right: 0,
-                          backgroundColor: '#cdc0c0',
-                          borderRadius: '50%',
-                          marginBottom: -20,
-                          marginRight: -20,
-                        }}
-                      >
-                        <IconButton
-                          onClick={() => updateFeaturedImage(index)}
-                          aria-label="delete"
-                          style={{ opacity: 1 }}
-                        >
-                          <StarIcon
-                            style={{
-                              color: featuredImage === image.id || (!featuredImage && index === 0) ? 'yellow' : 'gray',
-                            }}
-                          />
-                        </IconButton>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <FormFileUpload />
             </div>
+          </div>
 
-            <div {...getRootProps({ className: 'my-dropzone', style: { cursor: 'pointer', margin: '24px 0' } })}>
-              <input {...getInputProps({ id: 'images' })} />
-              Drag 'n' drop here
-              <Box marginTop={1}>OR</Box>
-              <Button type="button" variant="contained" color="primary" sx={{ borderRadius: 0, marginTop: 1 }}>
-                Browse
+          <FormLocation setLocation={setLocation} />
+          <div
+            id="footer"
+            style={{
+              width: '100%',
+              backgroundColor: '#92bcea',
+              position: 'sticky',
+              bottom: 0,
+              display: 'flex',
+              justifyContent: 'space-between',
+              flexDirection: 'row-reverse',
+              alignItems: 'center',
+              height: 48,
+              borderRadius: 4,
+              padding: '8px 16px',
+              alignSelf: 'end',
+            }}
+          >
+            <div>
+              <Button disabled={isLoading} variant="contained" type="submit">
+                Submit
               </Button>
             </div>
-          </div>
-        </div>
 
-        <Map location={location} />
-        <div
-          id="footer"
-          style={{
-            width: '100%',
-            backgroundColor: '#92bcea',
-            position: 'sticky',
-            bottom: 0,
-            display: 'flex',
-            justifyContent: 'space-between',
-            flexDirection: 'row-reverse',
-            alignItems: 'center',
-            height: 48,
-            borderRadius: 4,
-            padding: '8px 16px',
-          }}
-        >
-          <div>
-            <Button disabled={isLoading} variant="contained" type="submit">
-              Submit
+            {isLoading && <div>Uploading</div>}
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                flexDirection: 'column',
+                gap: '20px',
+              }}
+            >
+              {success && <Typography color="success">Success!</Typography>}
+              {isError && <div>Error</div>}
+            </div>
+
+            <Button component={Link} variant="contained" color="secondary" href="/feed">
+              {`< Back to feed`}
             </Button>
           </div>
-
-          {isLoading && <div>Uploading</div>}
-
-          <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', gap: '20px' }}>
-            {success && <Typography color="success">Success!</Typography>}
-            {isError && <div>Error</div>}
-          </div>
-
-          <Button component={Link} variant="contained" color="secondary" href="/feed">
-            {`< Back to feed`}
-          </Button>
-        </div>
-      </form>
+        </form>
+      </FormProvider>
       <div />
     </div>
   );
 };
 
 const CreateComplaintPage = () => {
+  const { data: session, status } = useSession();
+
+  if (status === 'loading') {
+    return <p>Loading...</p>;
+  }
+
+  if (status === 'unauthenticated') {
+    return <p>Access Denied</p>;
+  }
+
   return (
     <>
       <Head>

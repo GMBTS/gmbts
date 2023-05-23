@@ -5,11 +5,11 @@
 import * as Sentry from '@sentry/nextjs';
 
 Sentry.init({
-  dsn: process.env.SENTRY_DNS,
+  dsn: 'https://8b9ac343ccc64f8bb27bb187f17a2dd8@o4505220514316288.ingest.sentry.io/4505220515495936',
 
   // Adjust this value in production, or use tracesSampler for greater control
   tracesSampleRate: 1,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: true,
+  debug: false,
 });

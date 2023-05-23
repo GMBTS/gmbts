@@ -1,12 +1,14 @@
+export type FormGeolocationCoordinates = {
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+};
+
 export type CreateComplaintFormData = {
   title: string;
   content: string;
   images: { file: File; id: string }[];
-  location?: {
-    latitude: GeolocationCoordinates['latitude'];
-    longitude: GeolocationCoordinates['longitude'];
-    accuracy: GeolocationCoordinates['accuracy'];
-  };
+  location?: FormGeolocationCoordinates;
   licensePlate?: string;
   featuredImage: string;
   isAnonymous: boolean;

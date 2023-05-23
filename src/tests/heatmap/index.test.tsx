@@ -6,7 +6,7 @@ import React from 'react';
 
 import { prisma } from '@/db/prisma';
 
-import MapWithHeatmap, { getServerSideProps } from './index';
+import MapWithHeatmap, { getServerSideProps } from '../../pages/heatmap/index';
 
 const setupGoogleMock = () => {
   global.window.google = {
