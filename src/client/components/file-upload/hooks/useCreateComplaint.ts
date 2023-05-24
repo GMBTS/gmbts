@@ -56,6 +56,7 @@ const useCreateComplaint = () => {
             accuracy: complaint.location.accuracy,
           }
         : undefined,
+      asamakhta: complaint.asamakhta,
     };
 
     const returnedValue = await axios.post<Complaint>('/api/complaint/create', payload);

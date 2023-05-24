@@ -1,4 +1,5 @@
 import { Complaint } from '@prisma/client';
+import { wrapGetServerSidePropsWithSentry } from '@sentry/nextjs';
 import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth/next';
 
@@ -6,8 +7,6 @@ import { prisma } from '@/db/prisma';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 
 const EditComplaint: React.FC<{ complaint: Complaint }> = ({ complaint }) => {
-  console.log({ complaint });
-
   return (
     <div>
       <h1>Edit Complaint</h1>
@@ -17,7 +16,7 @@ const EditComplaint: React.FC<{ complaint: Complaint }> = ({ complaint }) => {
 
 export default EditComplaint;
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
+const getProps: GetServerSideProps = async (context) => {
   const complaintId = context?.params?.complaintId;
   const session = await getServerSession(context.req, context.res, authOptions);
 
@@ -56,3 +55,5 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   };
 };
+
+export const getServerSideProps = wrapGetServerSidePropsWithSentry(getProps, '/complaint/[complaintId]/edit');

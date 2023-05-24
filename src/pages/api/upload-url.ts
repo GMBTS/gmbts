@@ -1,3 +1,4 @@
+import { wrapApiHandlerWithSentry } from '@sentry/nextjs';
 import S3 from 'aws-sdk/clients/s3';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
@@ -5,7 +6,7 @@ import * as uuid from 'uuid';
 
 import { authOptions } from './auth/[...nextauth]';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     res.status(405).send('Method not allowed');
     return;
@@ -44,3 +45,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   res.status(200).json({ posts, complaintId });
 }
+
+export default wrapApiHandlerWithSentry(handler, '/api/upload-url');

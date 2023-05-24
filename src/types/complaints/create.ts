@@ -12,6 +12,7 @@ export type CreateComplaintFormData = {
   licensePlate?: string;
   featuredImage: string;
   isAnonymous: boolean;
+  asamakhta?: string;
 };
 export type CreateComplaintPayload = Omit<CreateComplaintFormData, 'images'> & {
   complaintId: string;

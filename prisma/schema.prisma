@@ -72,6 +72,7 @@ model Complaint {
   images        String[]
   licensePlate  String?
   featuredImage String?
+  asamakhta     String?
 
   authorId    String
   isAnonymous Boolean   @default(false)

@@ -1,10 +1,5 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-});
-
-module.exports = withPWA({
+const NextConfig = {
   images: {
     domains: [process.env.CDN_ENDPOINT_DOMIN],
   },
@@ -17,24 +12,31 @@ module.exports = withPWA({
       },
     ]
   },
-});
+  productionBrowserSourceMaps: true,
+  compress: false,
+  swcMinify: false,
+}
 
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+});
 
 // Injected content via Sentry wizard below
 
 const { withSentryConfig } = require("@sentry/nextjs");
 
 module.exports = withSentryConfig(
-  module.exports,
+  withPWA(NextConfig),
   {
     // For all available options, see:
     // https://github.com/getsentry/sentry-webpack-plugin#options
 
     // Suppresses source map uploading logs during build
-    silent: false,
+    silent: true,
 
     org: "gmbts",
-    project: "javascript-nextjs",
+    project: "new-project",
   },
   {
     // For all available options, see:
