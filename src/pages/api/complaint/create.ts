@@ -1,3 +1,4 @@
+import { wrapApiHandlerWithSentry } from '@sentry/nextjs';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 
@@ -6,7 +7,7 @@ import { CreateComplaintPayload } from '@/types/complaints/create';
 
 import { authOptions } from '../auth/[...nextauth]';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
 
   if (!session?.user?.id) {
@@ -19,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 
-  const formData = req.body as CreateComplaintPayload;
+  const formData = req.body as CreateComplaintPayload; // add this as assertion / joi validation
 
   const complaint = await prisma.complaint.create({
     data: {
@@ -31,6 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       featuredImage: formData.featuredImage,
       images: formData.imageKeys,
       location: JSON.stringify(formData.location),
+      asamakhta: formData.asamakhta,
     },
   });
 
@@ -38,3 +40,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   res.status(200).send(complaint);
 }
+
+export default wrapApiHandlerWithSentry(handler, '/api/complaint/create');

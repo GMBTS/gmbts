@@ -1,3 +1,4 @@
+import { wrapGetServerSidePropsWithSentry } from '@sentry/nextjs';
 import dayjs from 'dayjs';
 import { GetServerSideProps } from 'next/types';
 
@@ -31,7 +32,7 @@ function generateSiteMap(complaints: { complaintId: string; createdAt: Date }[])
 
 function SiteMap() {}
 
-export const getServerSideProps: GetServerSideProps = async ({ res }) => {
+export const getProps: GetServerSideProps = async ({ res }) => {
   const complaints = await prisma.complaint.findMany({ select: { complaintId: true, createdAt: true } });
 
   const sitemap = generateSiteMap(complaints);
@@ -45,5 +46,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     props: {},
   };
 };
+
+export const getServerSideProps = wrapGetServerSidePropsWithSentry(getProps, '/sitemap.xml');
 
 export default SiteMap;

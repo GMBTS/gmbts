@@ -124,7 +124,7 @@ export default ViewComplaint;
 
 export const getStaticProps: GetStaticProps = async (context) => {
   const complaintId = context?.params?.complaintId;
-  const cdnEndpoint = process.env.CDN_ENDPOINT;
+  const cdnEndpoint = process.env.CDN_ENDPOINT; // this is silly - i can pass it ad env var with the SSR
 
   if (!complaintId || typeof complaintId !== 'string') {
     return {
@@ -132,26 +132,35 @@ export const getStaticProps: GetStaticProps = async (context) => {
     };
   }
 
-  const complaint = await prisma.complaint.findUnique({
-    where: {
-      complaintId,
-    },
-  });
+  try {
+    const complaint = await prisma.complaint.findUnique({
+      where: {
+        complaintId,
+      },
+    });
 
-  if (!complaint) {
+    if (!complaint) {
+      return {
+        notFound: true,
+      };
+    }
+
     return {
-      notFound: true,
+      props: {
+        complaint: {
+          ...complaint, /// todo add this to react-query context
+          createdAt: complaint.createdAt.toISOString(),
+        },
+        cdnEndpoint,
+      },
     };
+  } catch (error) {
+    console.error(error);
+    throw new Error('There is a problem with the server. Please try again later.');
   }
 
   return {
-    props: {
-      complaint: {
-        ...complaint, /// todo add this to react-query context
-        createdAt: complaint.createdAt.toISOString(),
-      },
-      cdnEndpoint,
-    },
+    notFound: true,
   };
 };
 

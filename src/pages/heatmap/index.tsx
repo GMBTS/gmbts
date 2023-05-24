@@ -1,7 +1,8 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { GoogleMap, HeatmapLayer, useLoadScript } from '@react-google-maps/api';
+import { wrapGetServerSidePropsWithSentry } from '@sentry/nextjs';
 import Head from 'next/head';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 
 import { prisma } from '@/db/prisma';
 
@@ -20,6 +21,7 @@ const MapWithHeatmap: React.FC<{ locations: { location: string }[] }> = ({ locat
     if (!isLoaded) {
       return [];
     }
+
     return locations.map(({ location: rawLocation }) => {
       const locations = JSON.parse(rawLocation) as { latitude: number; longitude: number };
 
@@ -31,12 +33,18 @@ const MapWithHeatmap: React.FC<{ locations: { location: string }[] }> = ({ locat
     return <div>Loading</div>;
   }
 
+  const throwError = () => {
+    throw new Error('test');
+  };
+
   return (
     <GoogleMap
       mapContainerStyle={{ maxHeight: 1000, maxWidth: 1000, width: '90%', height: '90%' }}
       center={defaultLocation}
       zoom={13}
     >
+      <Button onClick={throwError}>Throw Error</Button>
+
       <HeatmapLayer data={parseLocations} />
     </GoogleMap>
   );
@@ -73,7 +81,7 @@ const HeatMap: React.FC<{ locations: { location: string }[] }> = ({ locations })
 
 export default HeatMap;
 
-export const getServerSideProps = async () => {
+const getProps = async () => {
   const locations = await prisma.complaint.findMany({ select: { location: true }, where: { location: { not: null } } });
 
   return {
@@ -82,3 +90,5 @@ export const getServerSideProps = async () => {
     },
   };
 };
+
+export const getServerSideProps = wrapGetServerSidePropsWithSentry(getProps, '/heatmap');

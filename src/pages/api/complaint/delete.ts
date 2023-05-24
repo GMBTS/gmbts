@@ -1,3 +1,4 @@
+import { wrapApiHandlerWithSentry } from '@sentry/nextjs';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 
@@ -5,7 +6,7 @@ import { prisma } from '@/db/prisma';
 
 import { authOptions } from '../auth/[...nextauth]';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
 
   if (req.method !== 'DELETE') {
@@ -45,3 +46,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await res.revalidate('/feed');
   res.status(200).send('Complaint deleted');
 }
+
+export default wrapApiHandlerWithSentry(handler, '/api/complaint/delete');
